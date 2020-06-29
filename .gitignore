@@ -1,4 +1,6 @@
 .vscode
 __pycache__
 .mypy_cache
+
+db.sqlite3
 drf_api
