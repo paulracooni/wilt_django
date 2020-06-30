@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'firebase_authentication',
 
     # Local 
+    'check_time',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +129,7 @@ STATIC_URL = '/static/'
 # REST settings
 
 ## Firebase authentication settings
-FIREBASE_PATH = os.path.join(BASE_DIR, 'keyfile.json')
+FIREBASE_PATH = os.path.join(BASE_DIR, '..', 'firebase_key.json')
 AUTH_USER_MODEL = 'firebase_authentication.User'
 
 REST_FRAMEWORK = {
