@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    #'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'firebase_authentication.authentication.FirebaseAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -134,6 +134,7 @@ AUTH_USER_MODEL = 'firebase_authentication.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # The default authentication schemes may be set globally.
         'firebase_authentication.authentication.FirebaseAuthentication',
     ),
 }

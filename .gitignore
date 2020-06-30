@@ -2,6 +2,7 @@
 __pycache__
 .mypy_cache
 
+dev_*
 db.sqlite3
 drf_api
 firebase_key.json

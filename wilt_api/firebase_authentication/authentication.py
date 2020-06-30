@@ -52,7 +52,9 @@ class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthenticat
             raise exceptions.NoAuthToken()
 
     def authenticate(self, request):
+        
         user = super(FirebaseAuthentication, self).authenticate(request)
+
         return user, None
 
 
@@ -67,3 +69,4 @@ class FirebaseAuthMiddleware(AuthenticationMixin, middleware.AuthenticationMiddl
 
     def process_request(self, request):
         request.user = SimpleLazyObject(lambda: self.authenticate(request))
+
