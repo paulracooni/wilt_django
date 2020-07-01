@@ -21,14 +21,11 @@ class User(AbstractUser):
     )
     display_name = models.CharField(
         _("display name"),
-        max_length=128,
+        max_length=20,
         blank=True,
         default=""
     )
-    email = models.EmailField(
-        _('email address'),
-        unique=True
-    )
+    email = models.EmailField(_('email address'), unique=True)
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
