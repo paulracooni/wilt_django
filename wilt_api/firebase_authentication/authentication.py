@@ -21,13 +21,28 @@ def verify_user_token(token):
     except Exception:
         raise exceptions.InvalidAuthToken()
 
-
 def get_or_create_user(user_data):
+
     user, created = UserModel.objects.get_or_create(
         id=user_data.get('uid'),
         defaults={"email": user_data.get('email')}
     )
+    
     return user
+
+def is_anonymous(user_data):
+    
+    return user_data['firebase']['sign_in_provider'] == 'anonymous'
+
+def get_anonymous():
+
+    user, created = UserModel.objects.get_or_create(
+        id="anonymous",
+        defaults={"email": "anonymous"}
+    )
+    return user
+
+
 
 
 class AuthenticationMixin:
@@ -37,11 +52,21 @@ class AuthenticationMixin:
         raise NotImplementedError()
 
     def authenticate(self, request):
+
         token = self.get_auth_token(request)
         user_data = verify_user_token(token)
-        return get_or_create_user(user_data)
 
+        return self.ck_anony_and_get_user(user_data)
 
+    @staticmethod
+    def ck_anony_and_get_user(user_data):
+
+        if is_anonymous(user_data):
+            user = get_anonymous()
+        else:
+            user = get_or_create_user(user_data)
+        
+        return user
 class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthentication):
 
     @staticmethod
