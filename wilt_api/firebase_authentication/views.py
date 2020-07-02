@@ -27,6 +27,11 @@ class Users(APIView):
     """
     def get(self, request, format=None):
         users = User.objects.all()
+        print("In Users")
+        print(f"request.user = {request.user}")
+        print(f"request.auth = {request.auth}")
+        print(f"request.is_authenticated = {request.user.is_authenticated}")
+        
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 

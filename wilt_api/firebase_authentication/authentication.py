@@ -2,7 +2,7 @@ __all__ = "FirebaseAuthentication", "FirebaseAuthMiddleware", "firebase_app"
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, middleware
-
+from django.contrib.auth.models import AnonymousUser
 
 import firebase_admin
 import firebase_authentication
@@ -24,26 +24,18 @@ def verify_user_token(token):
         # raise exceptions.InvalidAuthToken()
         return None
         
-def get_user_or_anonymous(user_data):
+def get_or_anonymous(user_data):
 
-    try:
+    if user_data:
         user = UserModel.objects.get(id=user_data.get('uid'))
-    except Exception :
-        user = get_anonymous()
-
-    return user
-
-def get_anonymous():
-
-    user, created = UserModel.objects.get_or_create(
-        id="anonymous",
-        defaults={"email": "anonymous"}
-    )
-    return user
-
-def is_anonymous(user_data):
+    else:
+        user = AnonymousUser()
     
-    return user_data['firebase']['sign_in_provider'] == 'anonymous'
+    return user
+
+def is_anonymous(user):
+
+        return isinstance(user, AnonymousUser)
 
 class AuthenticationMixin:
 
@@ -56,18 +48,8 @@ class AuthenticationMixin:
         token = self.get_auth_token(request)
         user_data = verify_user_token(token)
         
-        return get_user_or_anonymous(user_data)
+        return get_or_anonymous(user_data)
 
-    # @staticmethod
-    # def ck_anonymous_and_get_user(user_data):
-
-    #     if is_anonymous(user_data):
-    #         user = get_user(user_data)
-    #         # user = get_anonymous()
-    #     else:
-    #         user = get_user(user_data)
-        
-    #     return user
 class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthentication):
 
     @staticmethod
@@ -80,15 +62,17 @@ class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthenticat
     def authenticate(self, request):
         
         user = super(FirebaseAuthentication, self).authenticate(request)
+        auth = None if is_anonymous(user) else "FirebaseAuth"
 
-        return user, None
+        return user, auth
 
+    
 class FirebaseAuthMiddleware(AuthenticationMixin, middleware.AuthenticationMiddleware):
 
     @staticmethod
     def get_auth_token(request):
         try:
-            return request.COOKIES.get('access_token')
+            return request.META.get('HTTP_AUTHORIZATION')#request.COOKIES.get('access_token')
         except Exception:
             raise exceptions.NoAuthToken()
 
