@@ -1,3 +1,4 @@
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.permissions import BasePermission
 
 
@@ -11,13 +12,25 @@ class IsAdminUser(BasePermission):
         return bool(request.user and request.user.is_staff)
 
 
+class IsMyself(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+
+    def has_object_permission(slef, request, views, obj):
+        print(obj)
+        if request.method in SAFE_METHODS:
+            return True
+
+        return obj.author == request.user
+
+
 class IsAuthorOrReadonly(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
     def has_object_permission(slef, request, views, obj):
 
-        if request.method in permissions.SAFE_METHODS:
+        if request.method in SAFE_METHODS:
             return True
 
         return obj.author == request.user
@@ -28,7 +41,7 @@ class IsAuthorUpdateOrReadOnly(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        if request.method in SAFE_METHODS:
             return True
 
         if request.method == "DELETE":
