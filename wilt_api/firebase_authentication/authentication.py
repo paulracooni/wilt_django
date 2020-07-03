@@ -9,7 +9,6 @@ import firebase_authentication
 from django.utils.functional import SimpleLazyObject
 from firebase_admin import auth
 from rest_framework import authentication, exceptions
-
 from . import exceptions
 
 UserModel = get_user_model()
@@ -19,23 +18,42 @@ firebase_app = firebase_admin.initialize_app(credentials)
 def verify_user_token(token):
     
     try:
-        return auth.verify_id_token(token)
-    except Exception:
-        # raise exceptions.InvalidAuthToken()
-        return None
-        
-def get_or_anonymous(user_data):
+        return auth.verify_id_token(token, check_revoked=True)
+    except auth.RevokedIdTokenError as ex:
+        raise exceptions.RevokedIdAuthToken()
+    except auth.ExpiredIdTokenError as ex:
+        raise exceptions.ExpiredIdAuthToken()
+    except auth.InvalidIdTokenError as ex:
+        raise exceptions.InvalidIdAuthToken()
+    except ValueError:
+        pass
 
-    if user_data:
-        user = UserModel.objects.get(id=user_data.get('uid'))
-    else:
-        user = AnonymousUser()
-    
+    return None
+
+def get_or_create_user(user_data):
+
+    user, created = UserModel.objects.get_or_create(
+        id=user_data.get('uid'),
+        defaults={"email": user_data.get('email')}
+    )
+
     return user
 
-def is_anonymous(user):
+def is_anonymous(user_data):
 
-        return isinstance(user, AnonymousUser)
+    is_anonymous = (
+        user_data==None or user_data['provider_id']=='anonymous')
+        
+    return is_anonymous
+
+def get_or_anonymous(user_data):
+
+    if is_anonymous(user_data):
+        user = AnonymousUser()
+    else:
+        user = get_or_create_user(user_data)
+    
+    return user
 
 class AuthenticationMixin:
 
@@ -62,7 +80,7 @@ class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthenticat
     def authenticate(self, request):
         
         user = super(FirebaseAuthentication, self).authenticate(request)
-        auth = None if is_anonymous(user) else "FirebaseAuth"
+        auth = None if isinstance(user, AnonymousUser) else "FirebaseAuth"
 
         return user, auth
 
