@@ -7,27 +7,21 @@ import firebase_authentication.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('firebase_authentication', '0001_initial'),
+        ("firebase_authentication", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='user',
-            managers=[
-                ('objects', firebase_authentication.managers.UserManager()),
-            ],
+            name="user",
+            managers=[("objects", firebase_authentication.managers.UserManager()),],
         ),
-        migrations.RemoveField(
-            model_name='user',
-            name='first_name',
-        ),
-        migrations.RemoveField(
-            model_name='user',
-            name='last_name',
-        ),
+        migrations.RemoveField(model_name="user", name="first_name",),
+        migrations.RemoveField(model_name="user", name="last_name",),
         migrations.AddField(
-            model_name='user',
-            name='display_name',
-            field=models.CharField(blank=True, default='', max_length=128, verbose_name='display name'),
+            model_name="user",
+            name="display_name",
+            field=models.CharField(
+                blank=True, default="", max_length=128, verbose_name="display name"
+            ),
         ),
     ]

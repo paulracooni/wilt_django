@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from firebase_authentication import views
 
 urlpatterns = [
-    path('', views.Users.as_view()),
+    path("", views.Users.as_view()),
     # path('snippets/<int:pk>/', views.SnippetDetail.as_view()),
 ]
 
