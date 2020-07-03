@@ -43,9 +43,11 @@ def get_or_create_user(user_data):
 
 def is_anonymous(user_data):
 
-    is_anonymous = user_data == None or user_data["provider_id"] == "anonymous"
+    if user_data == None:
+        return True
 
-    return is_anonymous
+    provider = user_data["firebase"]["sign_in_provider"]
+    return provider == "anonymous"
 
 
 def get_or_anonymous(user_data):
