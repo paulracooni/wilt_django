@@ -15,10 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from check_time.views import what_time
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('time/', what_time),
     path('users/', include('firebase_authentication.urls')),
 ]
