@@ -6,18 +6,21 @@ from rest_framework.response import Response
 from firebase_authentication.models import User
 from firebase_authentication.serializers import UserSerializer
 from firebase_authentication.exceptions import UserNotFound
+
+from firebase_authentication.permissions import IsMyself
 from firebase_authentication.permissions import IsAuthenticated
 from firebase_admin import auth
 
 
-class Users(APIView):
-    """
-    List all Users, or create a new user.
-    """
+class UserCheck(APIView):
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        """
+        List all user
+        - This will be depreciated
+        """
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -38,3 +41,23 @@ class Users(APIView):
 
         except User.DoesNotExist:
             return Response(dict(is_valid=True), status=status.HTTP_200_OK)
+
+
+class UserDetail(APIView):
+
+    permission_classes = [IsMyself]
+
+    def get(self, request, uid, format=None):
+        """
+        Return user information
+        - This will be depreciated
+        """
+        try:
+            user = User.objects.get(id=uid)
+        except User.DoesNotExist:
+            return Response(
+                dict(detail="User doesn't exist"), status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
