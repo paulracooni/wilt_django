@@ -10,25 +10,25 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 
-class NoAuthToken(APIException):
+class NoIdToken(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = _("No id token provided.")
     default_code = "no_auth_token"
 
 
-class InvalidIdAuthToken(APIException):
+class InvalidIdToken(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = _("Invalid id token provided.")
     default_code = "invalid_token"
 
 
-class ExpiredIdAuthToken(APIException):
+class ExpiredIdToken(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = _("Expired id token provided.")
     default_code = "expired_token"
 
 
-class RevokedIdAuthToken(APIException):
+class RevokedIdToken(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = _("Revoked id token provided.")
     default_code = "revoked_token"

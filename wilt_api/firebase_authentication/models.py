@@ -15,7 +15,7 @@ class User(AbstractUser):
 
     id = models.CharField(max_length=28, primary_key=True, db_index=True, unique=True)
     display_name = models.CharField(
-        _("display name"), max_length=20, blank=True, default=""
+        _("display name"), max_length=20, blank=True, unique=True
     )
     email = models.EmailField(_("email address"), unique=True)
 

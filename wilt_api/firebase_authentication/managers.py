@@ -8,23 +8,14 @@ __all__ = ("UserManager",)
 
 
 class UserManager(DefaultUserManager):
-    def register_user(self, id, email, password=None, **extra_fields):
-
-        self._check_valid_register(id, email)
-
-        extra_fields.setdefault("is_active", True)
-        user = self.model(id=id, email=email, **extra_fields)
-        user.save(using=self._db)
-        return user
-
     @staticmethod
-    def _check_valid_register(uid, email):
+    def _check_valid_uid_email(uid, email=None):
         try:
             user = auth.get_user(uid)
         except Exception:
             raise UserNotFound
 
-        if user.email != email:
+        if email != None and user.email != email:
             raise UserEmailNotMatched
 
     def create_user(self, email, password=None, **extra_fields):

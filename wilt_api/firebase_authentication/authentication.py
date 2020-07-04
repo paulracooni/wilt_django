@@ -11,6 +11,8 @@ from firebase_admin import auth
 from rest_framework import authentication, exceptions
 from . import exceptions
 
+from wilt_user.models import WiltUser
+
 UserModel = get_user_model()
 credentials = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
 firebase_app = firebase_admin.initialize_app(credentials)
@@ -20,12 +22,12 @@ def verify_user_token(token):
 
     try:
         return auth.verify_id_token(token, check_revoked=True)
-    except auth.RevokedIdTokenError as ex:
-        raise exceptions.RevokedIdAuthToken()
-    except auth.ExpiredIdTokenError as ex:
-        raise exceptions.ExpiredIdAuthToken()
+    except auth.RevokedIdTokenError:
+        raise exceptions.RevokedIdToken()
+    except auth.ExpiredIdTokenError:
+        raise exceptions.ExpiredIdToken()
     except auth.InvalidIdTokenError as ex:
-        raise exceptions.InvalidIdAuthToken()
+        raise exceptions.InvalidIdToken()
     except ValueError:
         pass
 
@@ -34,7 +36,7 @@ def verify_user_token(token):
 
 def get_or_create_user(user_data):
 
-    user, created = UserModel.objects.get_or_create(
+    user, created = WiltUser.objects.get_or_create(
         id=user_data.get("uid"), defaults={"email": user_data.get("email")}
     )
 
@@ -69,7 +71,6 @@ class AuthenticationMixin:
 
         token = self.get_auth_token(request)
         user_data = verify_user_token(token)
-
         return get_or_anonymous(user_data)
 
 
@@ -85,7 +86,6 @@ class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthenticat
 
         user = super(FirebaseAuthentication, self).authenticate(request)
         auth = None if isinstance(user, AnonymousUser) else "FirebaseAuth"
-
         return user, auth
 
 
