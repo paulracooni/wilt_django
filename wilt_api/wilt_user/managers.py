@@ -4,15 +4,9 @@ __all__ = ("WiltUserManager",)
 
 
 class WiltUserManager(FirebaseUserManager):
-    IMMUTABLE_FIELDS = ("id", "email", "is_active", "is_staff", "is_superuser")
-
     def update_user(self, user, **extra_fields):
         extra_fields = self.__normalize_all(extra_fields)
-
-        for field, value in extra_fields.items():
-            if field not in self.IMMUTABLE_FIELDS:
-                setattr(user, field, value)
-
+        user = self.__update_user(user, extra_fields)
         user.save(using=self._db)
         return user
 
@@ -21,10 +15,12 @@ class WiltUserManager(FirebaseUserManager):
         Normalized all extra_fields
         if func_normalizers defined in get_func_normalizers
         """
+
         func_normalizers = self.get_func_normalizers()
+
         for field_name, func_normalizer in func_normalizers.items():
 
-            if self.is_field_in(extra_fields, filed_name=field_name):
+            if field_name in extra_fields.keys():
 
                 field_value = extra_fields[field_name]
                 extra_fields[field_name] = func_normalizer(field_value)
@@ -52,8 +48,7 @@ class WiltUserManager(FirebaseUserManager):
         return display_name
 
     @staticmethod
-    def is_field_in(extra_fields, filed_name):
-        """
-        Check is filed_name in extra_fields
-        """
-        return filed_name in extra_fields.keys()
+    def __update_user(user, extra_fields):
+        for field, value in extra_fields.items():
+            setattr(user, field, value)
+        return user

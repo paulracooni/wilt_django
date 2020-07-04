@@ -43,30 +43,55 @@ def get_user_or_404(id):
     return user
 
 
+def get_active_user_or_404(id):
+    user = get_user_or_404(id)
+    if not user.is_active:
+        raise Http404
+    return user
+
+
 class UserDetail(APIView):
 
     permission_classes = [permissions.IsMyself]
+    NO_UPDATE_FIELD = ("id", "email", "is_staff", "is_superuser")
 
     def get(self, request, id, format=None):
-        user = get_user_or_404(id=id)
+        user = get_active_user_or_404(id=id)
         serializer = WiltUserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, id, format=None):
         user = get_user_or_404(id=id)
-        serializer = self.update(user, request, partial=False)
+        fields = self.__filter_fields(request.data)
+        serializer = self.__update(user, fields, partial=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, id, format=None):
         user = get_user_or_404(id=id)
-        serializer = self.update(user, request, partial=True)
+        fields = self.__filter_fields(request.data)
+        serializer = self.__update(user, fields, partial=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, user, request, partial=False):
-        serializer = WiltUserSerializer(user, data=request.data, partial=partial)
+    def delete(self, request, id, format=None):
+        user = get_user_or_404(id=id)
+        serializer = self.__update(user, dict(is_active=False), partial=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def __update(user, data, partial=False):
+        serializer = WiltUserSerializer(user, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer
+
+    @classmethod
+    def __filter_fields(cls, fields):
+        fields = {
+            field_name: field_value
+            for field_name, field_value in fields.items()
+            if field_name not in cls.NO_UPDATE_FIELD
+        }
+        return fields
 
 
 class UserCheck(APIView):
