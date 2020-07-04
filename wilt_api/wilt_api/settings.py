@@ -37,10 +37,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third party
-    "firebase_authentication",
     # Local
     "check_time",
+    "firebase_authentication",
+    "wilt_user",
 ]
 
 MIDDLEWARE = [
