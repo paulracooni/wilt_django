@@ -28,9 +28,11 @@ class Til(models.Model):
 
     content = models.TextField(_("content"))
 
-    date_created = models.DateTimeField(_("date created"), default=timezone.now)
-
     is_public = models.BooleanField(_("public"), default=True,)
+
+    date_created = models.DateTimeField(
+        _("date created"), default=timezone.now, editable=False
+    )
 
     class Meta:
         # db_table = "til"
