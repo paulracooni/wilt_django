@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 
 from wilt_user.models import WiltUser
 
+__all__ = ("Til",)
+
 # Create your models here.
 CATEGORY_CHOICES = [
     ("PL", _("Plan")),
