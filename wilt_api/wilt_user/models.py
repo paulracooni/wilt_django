@@ -3,14 +3,14 @@ __all__ = ("WiltUser",)
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from firebase_authentication.models import User
+from firebase_authentication.models import User as FirebaseUser
 
 from wilt_user.managers import WiltUserManager
 
 # Create your models here.
 
 
-class WiltUser(User):
+class WiltUser(FirebaseUser):
     """
     Inherited from firebase_authentication.models.User
 
@@ -25,6 +25,9 @@ class WiltUser(User):
     "is_superuser": false
 
     Define attribute for Wilt user
+    "company_name"
+    "job_title"
+    "career_year"
     """
 
     company_name = models.CharField(
