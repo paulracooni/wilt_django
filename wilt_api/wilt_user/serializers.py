@@ -21,6 +21,8 @@ class WiltUserSerializer(serializers.ModelSerializer):
             "company_name",
             "job_title",
             "career_year",
+            "description",
+            "web_link",
         )
 
     def create(self, validated_data):

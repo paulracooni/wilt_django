@@ -28,15 +28,24 @@ class WiltUser(FirebaseUser):
     "company_name"
     "job_title"
     "career_year"
+    +
+    "description"
+    "web_link"
     """
 
     company_name = models.CharField(
         _("company name"), max_length=20, null=True, blank=True
     )
+
     job_title = models.CharField(_("job title"), max_length=20, null=True, blank=True)
+
     career_year = models.DecimalField(
         _("company name"), max_digits=3, decimal_places=0, null=True, blank=True
     )
+
+    description = models.TextField(_("user description"))
+
+    web_link = models.TextField(_("web link"))
 
     objects = WiltUserManager()
 
