@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "check_time",
     "firebase_authentication",
     "wilt_user",
+    "wilt_til",
 ]
 
 MIDDLEWARE = [
