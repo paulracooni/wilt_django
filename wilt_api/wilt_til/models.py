@@ -20,7 +20,7 @@ class Til(models.Model):
 
     id = models.AutoField(_("til id"), primary_key=True)
 
-    author = models.ForeignKey(_("author"), WiltUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
 
     category = models.CharField(_("category"), max_length=2, choices=CATEGORY_CHOICES)
 

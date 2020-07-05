@@ -9,6 +9,8 @@ from wilt_user.managers import WiltUserManager
 
 # Create your models here.
 
+nullable = dict(null=True, blank=True)
+
 
 class WiltUser(FirebaseUser):
     """
@@ -33,19 +35,17 @@ class WiltUser(FirebaseUser):
     "web_link"
     """
 
-    company_name = models.CharField(
-        _("company name"), max_length=20, null=True, blank=True
-    )
+    company_name = models.CharField(_("company name"), max_length=20, **nullable)
 
-    job_title = models.CharField(_("job title"), max_length=20, null=True, blank=True)
+    job_title = models.CharField(_("job title"), max_length=20, **nullable)
 
     career_year = models.DecimalField(
-        _("company name"), max_digits=3, decimal_places=0, null=True, blank=True
+        _("company name"), max_digits=3, decimal_places=0, **nullable
     )
 
-    description = models.TextField(_("user description"))
+    description = models.TextField(_("user description"), **nullable)
 
-    web_link = models.TextField(_("web link"))
+    web_link = models.TextField(_("web link"), **nullable)
 
     objects = WiltUserManager()
 
