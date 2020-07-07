@@ -4,9 +4,15 @@ from django.utils.translation import gettext_lazy as _
 
 from wilt_user.models import WiltUser
 
-__all__ = ("Til",)
+from tagging.registry import register
+from tagging.models import Tag, TaggedItem
+
+
+__all__ = ("Til", "Tag", "TaggedItem")
 
 # Create your models here.
+
+
 CATEGORY_CHOICES = [
     ("PL", _("Plan")),
     ("DS", _("Design")),
@@ -38,3 +44,8 @@ class Til(models.Model):
         # db_table = "til"
         verbose_name = _("til")
         verbose_name_plural = _("tils")
+
+
+# tagging app settings.
+# See the documents of Django Tagging
+# -> [https://django-tagging.readthedocs.io/en/develop/#]
