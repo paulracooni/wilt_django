@@ -8,15 +8,17 @@ from firebase_authentication.managers import UserManager
 __all__ = ("User",)
 
 
+domain_id = dict(max_length=28, primary_key=True, db_index=True, unique=True)
+domain_name = dict(max_length=20, unique=True, null=True, blank=True)
+
+
 class User(AbstractUser):
     username = None
     first_name = None
     last_name = None
 
-    id = models.CharField(max_length=28, primary_key=True, db_index=True, unique=True)
-    display_name = models.CharField(
-        _("display name"), max_length=20, blank=True, unique=True
-    )
+    id = models.CharField(**domain_id)
+    display_name = models.CharField(_("display name"), **domain_name)
     email = models.EmailField(_("email address"), unique=True)
 
     EMAIL_FIELD = "email"

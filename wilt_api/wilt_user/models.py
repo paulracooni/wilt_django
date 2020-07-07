@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from firebase_authentication.models import User as FirebaseUser
 
-from wilt_user.managers import WiltUserManager
+from firebase_authentication.managers import UserManager as FirebaseUserManager
 
 # Create your models here.
 
@@ -47,7 +47,7 @@ class WiltUser(FirebaseUser):
 
     web_link = models.TextField(_("web link"), **nullable)
 
-    objects = WiltUserManager()
+    objects = FirebaseUserManager()
 
     class Meta:
         verbose_name = _("user")

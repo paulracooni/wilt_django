@@ -34,11 +34,12 @@ def verify_user_token(token):
     return None
 
 
-def get_or_create_user(user_data):
+def get_or_anonymous(user_data):
 
-    user, created = WiltUser.objects.get_or_create(
-        id=user_data.get("uid"), defaults={"email": user_data.get("email")}
-    )
+    if is_anonymous(user_data):
+        user = AnonymousUser()
+    else:
+        user = get_or_create_user(user_data)
 
     return user
 
@@ -52,12 +53,12 @@ def is_anonymous(user_data):
     return provider == "anonymous"
 
 
-def get_or_anonymous(user_data):
+def get_or_create_user(user_data):
 
-    if is_anonymous(user_data):
-        user = AnonymousUser()
-    else:
-        user = get_or_create_user(user_data)
+    user, created = WiltUser.objects.get_or_create(
+        id=user_data.get("uid"),
+        defaults=dict(email=user_data["email"], display_name=None,),
+    )  # WiltUser.objects.get_or_create
 
     return user
 
