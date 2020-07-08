@@ -4,6 +4,7 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework import filters
 from rest_framework import generics
+from rest_framework import pagination
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -46,12 +47,23 @@ class IsPublicOrMineFilterBackend(filters.BaseFilterBackend):
 
 
 # ////////////////////////////////////////////
+# Define Pagination
+# - [https://www.django-rest-framework.org/api-guide/pagination/]
+# ////////////////////////////////////////////
+class IdCursorPagination(pagination.CursorPagination):
+    page_size = 15
+    cursor_query_param = "id"
+    ordering = "-date_created"
+
+
+# ////////////////////////////////////////////
 # Define views (generics)
 # - [https://www.django-rest-framework.org/api-guide/generic-views/]
 # ////////////////////////////////////////////
 class TilListCreate(generics.ListCreateAPIView):
     queryset = Til.objects.all()
     serializer_class = TilSerializer
+    pagination_class = IdCursorPagination
     permission_classes = [permissions.IsAuthor]
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
 
