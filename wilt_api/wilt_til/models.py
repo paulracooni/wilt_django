@@ -5,10 +5,13 @@ from django.utils.translation import gettext_lazy as _
 from wilt_user.models import WiltUser
 
 from tagging.registry import register
-from tagging.models import Tag, TaggedItem
 
 
-__all__ = ("Til", "Tag", "TaggedItem")
+__all__ = (
+    "Til",
+    "Clap",
+    "Bookmark",
+)
 
 # Create your models here.
 
@@ -37,7 +40,7 @@ class Til(models.Model):
     is_public = models.BooleanField(_("public"), default=True,)
 
     date_created = models.DateTimeField(
-        _("date created"), default=timezone.now, editable=False
+        _("date created"), auto_now_add=True, editable=False
     )
 
     class Meta:
@@ -46,6 +49,31 @@ class Til(models.Model):
         verbose_name_plural = _("tils")
 
 
-# tagging app settings.
-# See the documents of Django Tagging
-# -> [https://django-tagging.readthedocs.io/en/develop/#]
+class Clap(models.Model):
+    id = models.AutoField(_("clap id"), primary_key=True)
+    user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
+    til = models.ForeignKey(Til, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(
+        _("date created"), auto_now_add=True, editable=False
+    )
+
+    class Meta:
+        # db_table = "clap"
+        verbose_name = _("clap")
+        verbose_name_plural = _("claps")
+        unique_together = (("user", "til",),)
+
+
+class Bookmark(models.Model):
+    id = models.AutoField(_("bookmark id"), primary_key=True)
+    user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
+    til = models.ForeignKey(Til, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(
+        _("date created"), auto_now_add=True, editable=False
+    )
+
+    class Meta:
+        # db_table = "bookmark"
+        verbose_name = _("bookmark")
+        verbose_name_plural = _("bookmarks")
+        unique_together = (("user", "til",),)
