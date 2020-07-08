@@ -39,6 +39,8 @@ class Til(models.Model):
 
     is_public = models.BooleanField(_("public"), default=True,)
 
+    is_active = models.BooleanField(_("is active"), default=True,)
+
     date_created = models.DateTimeField(
         _("date created"), auto_now_add=True, editable=False
     )
