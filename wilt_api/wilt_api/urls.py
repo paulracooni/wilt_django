@@ -20,4 +20,5 @@ from wilt_user.views import UserCheck
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("users/", include("wilt_user.urls")),
+    path("tils/", include("wilt_til.urls")),
 ]
