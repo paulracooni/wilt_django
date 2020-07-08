@@ -132,4 +132,5 @@ REST_FRAMEWORK = {
         # The default authentication schemes may be set globally.
         "firebase_authentication.authentication.FirebaseAuthentication",
     ),
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
 }
