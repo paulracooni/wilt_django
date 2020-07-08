@@ -38,7 +38,6 @@ class IsActiveFilterBackend(filters.BaseFilterBackend):
     """
 
     def filter_queryset(self, request, queryset, view):
-
         return queryset.filter(is_active=True)
 
 
@@ -53,6 +52,17 @@ class IsPublicOrMineFilterBackend(filters.BaseFilterBackend):
         else:
             query = Q(is_public=True)
         return queryset.filter(query)
+
+
+class IsTilRealtedFilterBackend(filters.BaseFilterBackend):
+    """
+    Filter that only lists is_public=True or user's instance
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        print(request.data)
+        print(view)
+        return queryset.filter(til=5)
 
 
 # ////////////////////////////////////////////
@@ -91,10 +101,15 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
 
-class TilBookmark(generics.GenericAPIView):
+class TilBookmark(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = Bookmark.objects.all()
     serializer_class = BookmarkSerializer
+    pagination_class = IdCursorPagination
     permission_classes = [permissions.IsMyself]
+    filter_backends = [IsTilRealtedFilterBackend]
+
+    def get(self, request, id, format=None):
+        return self.list(self, request, id, format=None)
 
     def post(self, request, id, format=None):
         data = self.create(til=id, user=request.user.id)
@@ -112,9 +127,9 @@ class TilBookmark(generics.GenericAPIView):
         serializer.save()
         return serializer.data
 
-    def get_bookmark_or_404(self, til, user):
+    def get_bookmark_or_404(self, **query):
         try:
-            bookmark = self.get_queryset().get(til=til, user=user)
+            bookmark = self.get_queryset().get(**query)
         except Bookmark.DoesNotExist as ex:
             raise Http404
         return bookmark
