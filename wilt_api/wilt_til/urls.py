@@ -7,6 +7,7 @@ urlpatterns = [
     path("", views.TilListCreate.as_view()),
     path("<int:id>/", views.TilRetrieveUpdateDestroy.as_view()),
     path("<int:id>/bookmark", views.TilBookmark.as_view()),
+    path("<int:id>/clap", views.TilClap.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

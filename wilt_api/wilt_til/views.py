@@ -1,4 +1,3 @@
-from django.http import Http404
 from django.db.models import Q
 
 from rest_framework import status
@@ -9,24 +8,21 @@ from rest_framework import pagination
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.decorators import api_view
 
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 
 from wilt_til.models import Til, Clap, Bookmark
+from wilt_til.generics import TilRelationAPIView
 from wilt_til.serializers import TilSerializer
 from wilt_til.serializers import ClapSerializer
 from wilt_til.serializers import BookmarkSerializer
 
 from firebase_admin import auth
 
-__all__ = (
-    "TilListCreate",
-    "TilRetrieveUpdateDestroy",
-    "TilBookmark",
-)
+__all__ = ("TilListCreate", "TilRetrieveUpdateDestroy", "TilBookmark", "TilClap")
+
 
 # ////////////////////////////////////////////
 # Define filters
@@ -60,9 +56,8 @@ class IsTilRealtedFilterBackend(filters.BaseFilterBackend):
     """
 
     def filter_queryset(self, request, queryset, view):
-        print(request.data)
-        print(view)
-        return queryset.filter(til=5)
+        # til_id must be initilized before call ListModelMixin.list
+        return queryset.filter(til=view.til_id)
 
 
 # ////////////////////////////////////////////
@@ -73,6 +68,12 @@ class IdCursorPagination(pagination.CursorPagination):
     page_size = 15
     cursor_query_param = "id"
     ordering = "-date_created"
+
+
+# ////////////////////////////////////////////
+# Define helper fuctions (generics)
+# - [https://www.django-rest-framework.org/api-guide/generic-views/]
+# ////////////////////////////////////////////
 
 
 # ////////////////////////////////////////////
@@ -101,42 +102,17 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
 
-class TilBookmark(mixins.ListModelMixin, generics.GenericAPIView):
+class TilBookmark(TilRelationAPIView):
     queryset = Bookmark.objects.all()
     serializer_class = BookmarkSerializer
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsMyself]
     filter_backends = [IsTilRealtedFilterBackend]
 
-    def get(self, request, id, format=None):
-        return self.list(self, request, id, format=None)
 
-    def post(self, request, id, format=None):
-        data = self.create(til=id, user=request.user.id)
-        headers = self.get_success_headers(data)
-        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def delete(self, request, id, format=None):
-        bookmark = self.get_bookmark_or_404(til=id, user=request.user.id)
-        bookmark.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def create(self, til, user):
-        serializer = self.get_serializer(data=dict(til=til, user=user))
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return serializer.data
-
-    def get_bookmark_or_404(self, **query):
-        try:
-            bookmark = self.get_queryset().get(**query)
-        except Bookmark.DoesNotExist as ex:
-            raise Http404
-        return bookmark
-
-    @staticmethod
-    def get_success_headers(data):
-        try:
-            return {"Location": str(data[api_settings.URL_FIELD_NAME])}
-        except (TypeError, KeyError):
-            return {}
+class TilClap(TilRelationAPIView):
+    queryset = Clap.objects.all()
+    serializer_class = ClapSerializer
+    pagination_class = IdCursorPagination
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [IsTilRealtedFilterBackend]
