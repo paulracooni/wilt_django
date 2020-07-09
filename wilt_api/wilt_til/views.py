@@ -81,6 +81,22 @@ class TilListCreate(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthor]
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
 
+    def create(self, request, *args, **kwargs):
+        data = self.__put_user_id_data(request)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @staticmethod
+    def __put_user_id_data(request):
+        data = dict(request.data.items())
+        data["user"] = request.user.id
+        return data
+
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Til.objects.all()
