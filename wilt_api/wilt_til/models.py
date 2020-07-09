@@ -42,7 +42,7 @@ class Til(models.Model):
     is_active = models.BooleanField(_("is active"), default=True,)
 
     date_created = models.DateTimeField(
-        _("date created"), auto_now_add=True, editable=False
+        _("date created"), default=timezone.now, editable=False
     )
 
     class Meta:
@@ -56,7 +56,7 @@ class Clap(models.Model):
     user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
     til = models.ForeignKey(Til, on_delete=models.CASCADE)
     date_created = models.DateTimeField(
-        _("date created"), auto_now_add=True, editable=False
+        _("date created"), default=timezone.now, editable=False
     )
 
     class Meta:
@@ -71,7 +71,7 @@ class Bookmark(models.Model):
     user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
     til = models.ForeignKey(Til, on_delete=models.CASCADE)
     date_created = models.DateTimeField(
-        _("date created"), auto_now_add=True, editable=False
+        _("date created"), default=timezone.now, editable=False
     )
 
     class Meta:

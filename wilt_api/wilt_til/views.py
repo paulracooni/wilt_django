@@ -71,12 +71,6 @@ class IdCursorPagination(pagination.CursorPagination):
 
 
 # ////////////////////////////////////////////
-# Define helper fuctions (generics)
-# - [https://www.django-rest-framework.org/api-guide/generic-views/]
-# ////////////////////////////////////////////
-
-
-# ////////////////////////////////////////////
 # Define views (generics)
 # - [https://www.django-rest-framework.org/api-guide/generic-views/]
 # ////////////////////////////////////////////
