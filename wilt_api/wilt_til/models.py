@@ -86,9 +86,9 @@ class Tag(models.Model):
     name = models.CharField(max_length=50)
 
     class Meta:
-        db_table = 'tag'
-        verbose_name = '태그'
-        verbose_name_plural = '태그'
+        db_table = "tag"
+        verbose_name = "태그"
+        verbose_name_plural = "태그"
 
 
 class TilTag(models.Model):
@@ -97,8 +97,6 @@ class TilTag(models.Model):
     tag_name = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'tiltag'
-        verbose_name = 'TIL태그'
-        verbose_name_plural = 'TIL태그'
-
-
+        db_table = "tiltag"
+        verbose_name = "TIL태그"
+        verbose_name_plural = "TIL태그"

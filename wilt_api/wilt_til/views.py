@@ -84,8 +84,9 @@ class TilListCreate(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         data = self.__put_user_id_data(request)
 
-        tag_list = data['tag_list']
-        data.pop('tag_list')
+        tag_list = data.get("tag_list", [])
+        if tag_list:
+            data.pop("tag_list")
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -104,10 +105,10 @@ class TilListCreate(generics.ListCreateAPIView):
         data["user"] = request.user.id
         return data
 
-    # til과 해당 til의 tag_list를 받아서 저장하는 함수
     @staticmethod
     def create_tag_and_tiltag(til, tag_list):
         """
+        til과 해당 til의 tag_list를 받아서 저장하는 함수
         :param til: object
         :param tag_list: ['피그마', '제플린']
         :return:
@@ -122,8 +123,6 @@ class TilListCreate(generics.ListCreateAPIView):
             TilTag.objects.create(til=til, tag_name=tag)
 
         return True
-
-
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
