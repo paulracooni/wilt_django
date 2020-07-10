@@ -1,4 +1,5 @@
-from django.http import Http404
+import json
+from django.http import Http404, HttpResponse
 
 from rest_framework import status, generics
 from rest_framework.views import APIView
@@ -7,6 +8,8 @@ from rest_framework.response import Response
 
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
+from wilt_til.models import Clap, Bookmark, Til, TilTag
+from wilt_til.serializers import TilSerializer
 
 from wilt_user.models import WiltUser
 from wilt_user.serializers import WiltUserSerializer
@@ -139,3 +142,80 @@ class UserCheck(APIView):
             is_not_used = True
 
         return is_not_used
+
+# User가 clap한 Til 목록을 불러오는 view
+class UserClaps(APIView):
+
+    def get(self, request, id, format=None):
+        user = get_active_user_or_404(id=id)
+        queryset = Clap.objects.select_related('til').filter(user=user)
+        user_clap_list = []
+
+        for clap in queryset:
+            til = TilSerializer(clap.til)
+            user_clap_list.append(til.data)
+
+        result = dict(user_clap_list)
+        print('result', result)
+        return HttpResponse(json.dumps(user_clap_list, ensure_ascii=False), status=status.HTTP_200_OK)
+
+
+# User가 북마크한 Til 목록을 불러오는 view
+class UserBookmark(APIView):
+
+    def get(self, request, id, format=None):
+        user = get_active_user_or_404(id=id)
+        queryset = Bookmark.objects.select_related('til').filter(user=user)
+        user_bookmark_list = []
+
+        for bookmark in queryset:
+            til = TilSerializer(bookmark.til)
+            user_bookmark_list.append(til.data)
+
+        return HttpResponse(json.dumps(user_bookmark_list, ensure_ascii=False), status=status.HTTP_200_OK)
+
+
+
+# User가 TIL에 사용하였던 태그들을 불러오는 view
+# User의 태그 중 해당 tag가 들어간 Til 가져오는 view
+class UserTag(APIView):
+
+    def get(self, request, id, format=None):
+        user = get_active_user_or_404(id=id)
+        user_til_list = Til.objects.filter(user=user)
+
+        tag_name = request.GET.get('tag_name', '')
+
+        #tag_name이 있을 시 => 해당 tag가 쓰인 TIL 보내주기
+        #tag_name이 없을 시 => 고객의 태그 list 반환
+        if not tag_name:
+            user_tag_list = []
+
+            for user_til in user_til_list:
+                til_tags = TilTag.objects.select_related('tag_name').filter(til=user_til)
+
+                for til_tag in til_tags:
+                    if til_tag.tag_name.name in user_tag_list:
+                        continue
+
+                    user_til_list.append(til_tag.tag_name.name)
+
+            result = user_tag_list
+
+        else:
+            # 한 til에 같은 tag는 없다고 가정
+            tag_til_list = []
+
+            til_tag_list = TilTag.objects.select_related('til').filter(tag_name__name=tag_name, user=user)
+
+            for til_tag in til_tag_list:
+                til = TilSerializer(til_tag.til)
+                tag_til_list.append(til.data)
+
+            result = tag_til_list
+
+
+        return HttpResponse(json.dumps(result, ensure_ascii=False), status=status.HTTP_200_OK)
+
+
+
