@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 
-from wilt_til.models import Til, Clap, Bookmark
+from wilt_til.models import Til, Clap, Bookmark, Tag, TilTag
 from wilt_til.generics import TilRelationAPIView
 from wilt_til.serializers import TilSerializer
 from wilt_til.serializers import ClapSerializer
@@ -83,9 +83,16 @@ class TilListCreate(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = self.__put_user_id_data(request)
+
+        tag_list = data['tag_list']
+        data.pop('tag_list')
+
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        self.create_tag_and_tiltag(serializer, tag_list)
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -96,6 +103,27 @@ class TilListCreate(generics.ListCreateAPIView):
         data = dict(request.data.items())
         data["user"] = request.user.id
         return data
+
+    # til과 해당 til의 tag_list를 받아서 저장하는 함수
+    @staticmethod
+    def create_tag_and_tiltag(til, tag_list):
+        """
+        :param til: object
+        :param tag_list: ['피그마', '제플린']
+        :return:
+        """
+        for tag in tag_list:
+
+            try:
+                tag = Tag.objects.get(name=tag)
+            except Tag.DoesNotExist:
+                tag = Tag.objects.create(name=tag)
+
+            TilTag.objects.create(til=til, tag_name=tag)
+
+        return True
+
+
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
