@@ -43,6 +43,7 @@ class UserManager(DefaultUserManager):
             uid=user.id,
             display_name=extra_fields.get("display_name", user.display_name),
             disabled=False,
+            photo_url=extra_fields.get("picture", user.picture),
         )
         user = self.__update_user(user, extra_fields)
         user.save(using=self._db)

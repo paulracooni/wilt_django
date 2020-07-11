@@ -11,6 +11,8 @@ __all__ = ("User",)
 domain_id = dict(max_length=28, primary_key=True, db_index=True, unique=True)
 domain_name = dict(max_length=20, unique=True, null=True, blank=True)
 
+nullable = dict(null=True, blank=True)
+
 
 class User(AbstractUser):
     username = None
@@ -20,6 +22,7 @@ class User(AbstractUser):
     id = models.CharField(**domain_id)
     display_name = models.CharField(_("display name"), **domain_name)
     email = models.EmailField(_("email address"), unique=True)
+    picture = models.URLField(_("picture"), **nullable)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
