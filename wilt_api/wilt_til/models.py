@@ -4,12 +4,16 @@ from django.utils.translation import gettext_lazy as _
 
 from wilt_user.models import WiltUser
 
+__all__ = (
+    "Tag",
+    "Til",
+    "Clap",
+    "Bookmark",
+)
 
-__all__ = ("Til", "Clap", "Bookmark", "Tag")
-
-# Create your models here.
-
-
+# ////////////////////////////////////////////////////////////
+# Define Models
+# ////////////////////////////////////////////////////////////
 CATEGORY_CHOICES = [
     ("PL", _("Plan")),
     ("DS", _("Design")),
@@ -20,7 +24,7 @@ CATEGORY_CHOICES = [
 
 
 class Tag(models.Model):
-    # id = models.AutoField(_("tag id"), primary_key=True)
+
     name = models.CharField(max_length=50)
 
     class Meta:
@@ -54,6 +58,8 @@ class Til(models.Model):
     date_created = models.DateTimeField(
         _("date created"), default=timezone.now, editable=False
     )
+
+    # objects = TilManager()
 
     class Meta:
         # db_table = "til"
@@ -89,14 +95,3 @@ class Bookmark(models.Model):
         verbose_name = _("bookmark")
         verbose_name_plural = _("bookmarks")
         unique_together = (("user", "til",),)
-
-
-# class TilTag(models.Model):
-#     id = models.AutoField(_("tiltag id"), primary_key=True)
-#     til = models.ForeignKey(Til, on_delete=models.CASCADE)
-#     tag_name = models.ForeignKey(Tag, on_delete=models.CASCADE)
-
-#     class Meta:
-#         db_table = "tiltag"
-#         verbose_name = "TIL태그"
-#         verbose_name_plural = "TIL태그"
