@@ -155,10 +155,7 @@ class UserClaps(APIView):
             til = TilSerializer(clap.til)
             user_clap_list.append(til.data)
             
-        return HttpResponse(
-            json.dumps(user_clap_list, ensure_ascii=False), status=status.HTTP_200_OK
-        )
-
+        return Response(user_clap_list, status=status.HTTP_200_OK)
 
 # User가 북마크한 Til 목록을 불러오는 view
 class UserBookmark(APIView):
@@ -171,10 +168,8 @@ class UserBookmark(APIView):
             til = TilSerializer(bookmark.til)
             user_bookmark_list.append(til.data)
 
-        return HttpResponse(
-            json.dumps(user_bookmark_list, ensure_ascii=False),
-            status=status.HTTP_200_OK,
-        )
+        return Response(user_bookmark_list, status=status.HTTP_200_OK)
+
 
 
 # User가 TIL에 사용하였던 태그들을 불러오는 view
