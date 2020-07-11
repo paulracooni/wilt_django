@@ -2,7 +2,7 @@ __all__ = "FirebaseAuthentication", "FirebaseAuthMiddleware", "firebase_app"
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, middleware
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, update_last_login
 
 import firebase_admin
 import firebase_authentication
@@ -55,6 +55,7 @@ def is_anonymous(user_data):
 
 def get_or_create_user(user_data):
 
+    print(user_data)
     user, created = WiltUser.objects.get_or_create(
         id=user_data.get("uid"),
         defaults=dict(email=user_data["email"], display_name=None, picture=None),
@@ -64,6 +65,8 @@ def get_or_create_user(user_data):
     if not created and user.picture == None:
         setattr(user, "picture", user_data["picture"])
         user.save()
+
+    update_last_login(None, user)
 
     return user
 
