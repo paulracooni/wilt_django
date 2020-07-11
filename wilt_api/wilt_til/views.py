@@ -21,6 +21,7 @@ from wilt_til.serializers import BookmarkSerializer
 
 from firebase_admin import auth
 
+from ast import literal_eval
 __all__ = ("TilListCreate", "TilRetrieveUpdateDestroy", "TilBookmark", "TilClap")
 
 
@@ -82,17 +83,29 @@ class TilListCreate(generics.ListCreateAPIView):
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
 
     def create(self, request, *args, **kwargs):
-        data = self.__put_user_id_data(request)
 
+        
+        data = self.__put_user_id_data(request)
+        
+        # extracting tag_list
         tag_list = data.get("tag_list", [])
+
         if tag_list:
+            # If tag_list in data, Evaluate tag_list string into List
+            # @TODO: We should check type and list element type constraint! 
+            # @TODO: - Tag_list must be list, list element must be string.
+            # [HINT]: If literal_eval get unexpected string, Raise SyntaxError
+            tag_list = literal_eval(tag_list)
             data.pop("tag_list")
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        self.create_tag_and_tiltag(serializer, tag_list)
+        if tag_list:
+            til_id = serializer.data.get('id', None)
+            til = self.get_queryset().get(id=til_id)
+            self.create_tag_and_tiltag(til, tag_list)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -114,7 +127,6 @@ class TilListCreate(generics.ListCreateAPIView):
         :return:
         """
         for tag in tag_list:
-
             try:
                 tag = Tag.objects.get(name=tag)
             except Tag.DoesNotExist:
