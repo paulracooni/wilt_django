@@ -20,6 +20,8 @@ class TagSerializer(serializers.ModelSerializer):
 class TilSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(default=True)
     is_public = serializers.BooleanField(default=True)
+    n_bookmark = serializers.SerializerMethodField()
+    n_clap = serializers.SerializerMethodField()
     tags = serializers.SlugRelatedField(
         many=True, queryset=Tag.objects.all(), slug_field="name"
     )
@@ -27,7 +29,15 @@ class TilSerializer(serializers.ModelSerializer):
     class Meta:
         model = Til
         fields = "__all__"
-        read_only_fields = GLOBAL_ROF
+        read_only_fields = GLOBAL_ROF + ("n_bookmark", "n_clap",)
+
+    def get_n_bookmark(self, obj):
+
+        return Bookmark.objects.filter(til=obj).count()
+
+    def get_n_clap(self, obj):
+
+        return Clap.objects.filter(til=obj).count()
 
 
 class ClapSerializer(serializers.ModelSerializer):

@@ -1,5 +1,6 @@
 from django.db.models import Q
 
+
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework import filters
@@ -79,7 +80,7 @@ class IdCursorPagination(pagination.CursorPagination):
 
 
 # ////////////////////////////////////////////
-# Define views (generics)
+# Define Helper functions for APIViews
 # - [https://www.django-rest-framework.org/api-guide/generic-views/]
 # ////////////////////////////////////////////
 def extract_data_with_user_id_form(request):
@@ -105,6 +106,33 @@ def get_success_headers(data):
         return {}
 
 
+def attach_additional_data(data, user_id):
+    def attach(data, user_id):
+        til_id = data.get("id")
+        if user_id is not None:
+            additional_data = dict(
+                did_clap=Clap.objects.filter(user=user_id, til=til_id).exists(),
+                did_bookmark=Bookmark.objects.filter(user=user_id, til=til_id).exists(),
+            )
+        else:
+            additional_data = dict(did_clap=False, did_bookmark=False,)
+        data.update(additional_data)
+        return data
+
+    if isinstance(data, dict):
+        data = attach(data, user_id)
+    else:
+        data = [attach(element, user_id) for element in data]
+
+    return data
+
+
+# ////////////////////////////////////////////
+# Define views (generics)
+# - [https://www.django-rest-framework.org/api-guide/generic-views/]
+# ////////////////////////////////////////////
+
+
 class TilListCreate(generics.GenericAPIView):
     """
     [GET]
@@ -120,13 +148,24 @@ class TilListCreate(generics.GenericAPIView):
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
 
     def get(self, request, *args, **kwargs):
+
         queryset = self.filter_queryset(self.get_queryset())
+
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        queryset = page if page is not None else queryset
+
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+        response_data = attach_additional_data(
+            data=serializer.data, user_id=request.user.id
+        )
+
+        if page is not None:
+            response = self.get_paginated_response(response_data)
+        else:
+            response = Response(response_data, status=status.HTTP_200_OK)
+
+        return response
 
     def post(self, request, *args, **kwargs):
         data = extract_data_with_user_id_form(request)
@@ -134,10 +173,7 @@ class TilListCreate(generics.GenericAPIView):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        headers = get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -146,6 +182,14 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthor]
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
     lookup_field = "id"
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = attach_additional_data(
+            data=serializer.data, user_id=request.user.id
+        )
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
 
@@ -164,7 +208,7 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         serializer = self.get_serializer(
