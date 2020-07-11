@@ -1,5 +1,5 @@
 from django.db.models import Q
-
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework import mixins
@@ -68,7 +68,47 @@ class IsTilRealtedFilterBackend(filters.BaseFilterBackend):
         # til_id must be initilized before call ListModelMixin.list
         return queryset.filter(til=view.til_id)
 
+class TilSearchingFilterBackend(filters.BaseFilterBackend):
 
+    def filter_queryset(self, request, queryset, view):
+        
+        valid_query_params = self.filter_valid_query(
+                model = queryset.model,
+                query_params = request.query_params 
+        )
+
+        if valid_query_params:
+            query = self.build_query(valid_query_params)
+            queryset = queryset.filter(**query)
+        
+        return queryset
+    
+    def filter_valid_query(self, model, query_params):
+        valid_query = dict([(key, val) 
+            for key, val in query_params.items() if hasattr(model, key)])
+        return valid_query
+
+    def build_query(self, query_params):
+        query = dict()
+        for key, val in query_params.items():
+            if key == 'tags':
+                query['tags__in'] = self.__get_tags(val)
+            else:
+                query[key] = val
+
+        return query
+
+    def __get_tags(self, tags):
+
+        instances = []
+        for name in parse_tag_input(tags):
+            try:
+                instances.append(Tag.objects.get(name=name))
+            except Tag.DoesNotExist:
+                pass
+
+        return instances
+            
 # ////////////////////////////////////////////
 # Define Pagination
 # - [https://www.django-rest-framework.org/api-guide/pagination/]
@@ -145,10 +185,11 @@ class TilListCreate(generics.GenericAPIView):
     serializer_class = TilSerializer
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsAuthor]
-    filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
+    filter_backends = [
+        IsActiveFilterBackend, IsPublicOrMineFilterBackend, TilSearchingFilterBackend]
 
     def get(self, request, *args, **kwargs):
-
+        
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
