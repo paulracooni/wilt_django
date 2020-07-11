@@ -55,7 +55,6 @@ def is_anonymous(user_data):
 
 def get_or_create_user(user_data):
 
-    print(user_data)
     user, created = WiltUser.objects.get_or_create(
         id=user_data.get("uid"),
         defaults=dict(email=user_data["email"], display_name=None, picture=None),
