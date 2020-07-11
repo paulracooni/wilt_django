@@ -4,26 +4,19 @@ from wilt_user.models import WiltUser
 
 __all__ = ("WiltUserSerializer",)
 
+NOT_USED_WILTUSER_FIELDS = [
+    "password",
+    "is_superuser",
+    "is_staff",
+    "groups",
+    "user_permissions",
+]
+
 
 class WiltUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = WiltUser
-        fields = (
-            # Firebase field
-            "id",
-            "display_name",
-            "email",
-            # Django permission field
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            # Wilt field
-            "company_name",
-            "job_title",
-            "career_year",
-            "description",
-            "web_link",
-        )
+        exclude = NOT_USED_WILTUSER_FIELDS
 
     def create(self, validated_data):
         return WiltUser.objects.create_user(**validated_data)
