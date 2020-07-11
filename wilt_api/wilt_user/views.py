@@ -154,6 +154,7 @@ class UserClaps(APIView):
         for clap in queryset:
             til = TilSerializer(clap.til)
             user_clap_list.append(til.data)
+            
         return HttpResponse(
             json.dumps(user_clap_list, ensure_ascii=False), status=status.HTTP_200_OK
         )
