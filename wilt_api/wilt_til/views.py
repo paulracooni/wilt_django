@@ -13,15 +13,18 @@ from rest_framework.decorators import api_view
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 
-from wilt_til.models import Til, Clap, Bookmark, Tag, TilTag
+from wilt_til.models import Til, Clap, Bookmark, Tag  # , TilTag
 from wilt_til.generics import TilRelationAPIView
 from wilt_til.serializers import TilSerializer
 from wilt_til.serializers import ClapSerializer
 from wilt_til.serializers import BookmarkSerializer
-
+from wilt_til.utils import parse_tag_input
 from firebase_admin import auth
 
+import tagging
+
 from ast import literal_eval
+
 __all__ = ("TilListCreate", "TilRetrieveUpdateDestroy", "TilBookmark", "TilClap")
 
 
@@ -83,30 +86,11 @@ class TilListCreate(generics.ListCreateAPIView):
     filter_backends = [IsActiveFilterBackend, IsPublicOrMineFilterBackend]
 
     def create(self, request, *args, **kwargs):
-
-        
         data = self.__put_user_id_data(request)
-        
-        # extracting tag_list
-        tag_list = data.get("tag_list", [])
-
-        if tag_list:
-            # If tag_list in data, Evaluate tag_list string into List
-            # @TODO: We should check type and list element type constraint! 
-            # @TODO: - Tag_list must be list, list element must be string.
-            # [HINT]: If literal_eval get unexpected string, Raise SyntaxError
-            tag_list = literal_eval(tag_list)
-            data.pop("tag_list")
-
+        data = self.__parse_tag_and_create_if_new(data)
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        if tag_list:
-            til_id = serializer.data.get('id', None)
-            til = self.get_queryset().get(id=til_id)
-            self.create_tag_and_tiltag(til, tag_list)
-
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -119,22 +103,11 @@ class TilListCreate(generics.ListCreateAPIView):
         return data
 
     @staticmethod
-    def create_tag_and_tiltag(til, tag_list):
-        """
-        til과 해당 til의 tag_list를 받아서 저장하는 함수
-        :param til: object
-        :param tag_list: ['피그마', '제플린']
-        :return:
-        """
-        for tag in tag_list:
-            try:
-                tag = Tag.objects.get(name=tag)
-            except Tag.DoesNotExist:
-                tag = Tag.objects.create(name=tag)
-
-            TilTag.objects.create(til=til, tag_name=tag)
-
-        return True
+    def __parse_tag_and_create_if_new(data):
+        data["tags"] = parse_tag_input(data.get("tags", ""))
+        for name in data["tags"]:
+            tag, created = Tag.objects.get_or_create(name=name)
+        return data
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):

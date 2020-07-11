@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
-from wilt_til.models import Clap, Bookmark, Til, TilTag
+from wilt_til.models import Clap, Bookmark, Til, Tag
 from wilt_til.serializers import TilSerializer
 
 from wilt_user.models import WiltUser
@@ -154,8 +154,9 @@ class UserClaps(APIView):
         for clap in queryset:
             til = TilSerializer(clap.til)
             user_clap_list.append(til.data)
-            
+
         return Response(user_clap_list, status=status.HTTP_200_OK)
+
 
 # User가 북마크한 Til 목록을 불러오는 view
 class UserBookmark(APIView):
@@ -171,48 +172,22 @@ class UserBookmark(APIView):
         return Response(user_bookmark_list, status=status.HTTP_200_OK)
 
 
-
 # User가 TIL에 사용하였던 태그들을 불러오는 view
 # User의 태그 중 해당 tag가 들어간 Til 가져오는 view
 class UserTag(APIView):
     def get(self, request, id, format=None):
         user = get_active_user_or_404(id=id)
-        user_til_list = Til.objects.filter(user=user)
+        tils = Til.objects.filter(user=user).prefetch_related("tags")
+        tags = self.__count_tags_in_tils(tils)
+        return Response(tags, status=status.HTTP_200_OK)
 
-        tag_name = request.GET.get("tag_name", "")
-
-        # tag_name이 있을 시 => 해당 tag가 쓰인 TIL 보내주기
-        # tag_name이 없을 시 => 고객의 태그 list 반환
-        if not tag_name:
-            user_tag_list = []
-
-            for user_til in user_til_list:
-                til_tags = TilTag.objects.select_related("tag_name").filter(
-                    til=user_til
-                )
-
-                for til_tag in til_tags:
-                    if til_tag.tag_name.name in user_tag_list:
-                        continue
-
-                    user_til_list.append(til_tag.tag_name.name)
-
-            result = user_tag_list
-
-        else:
-            # 한 til에 같은 tag는 없다고 가정
-            tag_til_list = []
-
-            til_tag_list = TilTag.objects.select_related("til").filter(
-                tag_name__name=tag_name, user=user
-            )
-
-            for til_tag in til_tag_list:
-                til = TilSerializer(til_tag.til)
-                tag_til_list.append(til.data)
-
-            result = tag_til_list
-
-        return HttpResponse(
-            json.dumps(result, ensure_ascii=False), status=status.HTTP_200_OK
-        )
+    @staticmethod
+    def __count_tags_in_tils(tils):
+        tags = dict()
+        for til in tils:
+            for tag in til.tags.all():
+                if tag.name in tags.keys():
+                    tags[tag.name] += 1
+                else:
+                    tags[tag.name] = 1
+        return tags
