@@ -121,7 +121,7 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
 # ////////////////////////////////////////////
 class IdCursorPagination(pagination.CursorPagination):
     page_size = 15
-    cursor_query_param = "id"
+    cursor_query_param = "cursor"
     ordering = "-date_created"
 
 
