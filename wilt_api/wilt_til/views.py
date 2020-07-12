@@ -229,7 +229,7 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
+        serializer = FeedSerializer(instance)
         response_data = attach_additional_data(
             data=serializer.data, user_id=request.user.id
         )
