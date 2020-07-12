@@ -18,6 +18,7 @@ from firebase_authentication import permissions
 from wilt_til.models import Til, Clap, Bookmark, Tag  # , TilTag
 from wilt_til.generics import TilRelationAPIView
 from wilt_til.serializers import TilSerializer
+from wilt_til.serializers import FeedSerializer
 from wilt_til.serializers import ClapSerializer
 from wilt_til.serializers import BookmarkSerializer
 from wilt_til.utils import parse_tag_input
@@ -179,16 +180,9 @@ def attach_additional_data(data, user_id):
 # ////////////////////////////////////////////
 
 
-class TilListCreate(generics.GenericAPIView):
-    """
-    [GET]
-    - List all api
-    [POST]
-    - Create New Til
-    """
-
+class FeedListCreate(generics.GenericAPIView):
     queryset = Til.objects.all()
-    serializer_class = TilSerializer
+    serializer_class = FeedSerializer
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsAuthor]
     filter_backends = [
@@ -220,7 +214,7 @@ class TilListCreate(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         data = extract_data_with_user_id_form(request)
         data["tags"] = parse_tag_and_create_if_new(data.get("tags", ""))
-        serializer = self.get_serializer(data=data)
+        serializer = TilSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

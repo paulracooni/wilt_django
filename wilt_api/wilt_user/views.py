@@ -275,12 +275,12 @@ class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
         instance = self.get_instance_or_false(
             user_id=request.user.id, following_user_id=id
         )
-        if instance:    
+        if instance:
             instance.delete()
             detail = f"{instance} is not true anymore!"
             dict(detail=detail)
             response = Response(status=status.HTTP_204_NO_CONTENT)
-        else: 
+        else:
             detail = f"ObjectDoesNotExist, user_id: {request.user.id}, following_user_id:{id}"
             response = Response(dict(detail=detail), status=status.HTTP_404_NOT_FOUND)
         return response

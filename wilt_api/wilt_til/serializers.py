@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from wilt_til.models import Til, Clap, Bookmark, Tag
+from wilt_user.models import WiltUser
+from wilt_user.serializers import WiltUserSerializer
 
 __all__ = ("TilSerializer",)
 
@@ -38,6 +40,26 @@ class TilSerializer(serializers.ModelSerializer):
     def get_n_clap(self, obj):
 
         return Clap.objects.filter(til=obj).count()
+
+
+class FeedSerializer(TilSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
+
+
+class MiniWiltUserSerilizer(WiltUserSerializer):
+    class Meta:
+        fields = (
+            "display_name",
+            "picture",
+            "company_name",
+            "job_title",
+            "career_year",
+        )
+        model = WiltUser
 
 
 class ClapSerializer(serializers.ModelSerializer):
