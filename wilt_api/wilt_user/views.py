@@ -1,7 +1,7 @@
 import json
 from django.http import Http404, HttpResponse
 
-from rest_framework import status, generics
+from rest_framework import status, generics, mixins, filters
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -10,15 +10,20 @@ from firebase_authentication import exceptions
 from firebase_authentication import permissions
 from wilt_til.models import Clap, Bookmark, Til, Tag
 from wilt_til.serializers import TilSerializer
+from wilt_til.views import IdCursorPagination
 
-from wilt_user.models import WiltUser
+from wilt_user.models import WiltUser, UserFollow
 from wilt_user.serializers import WiltUserSerializer
+from wilt_user.serializers import UserFollowSerializer
 
 from firebase_admin import auth
 
 __all__ = (
     "UserCheck",
     "UserDetail",
+    "UserTag",
+    "UserClaps",
+    "UserBookmark",
 )
 
 # class UserDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -100,7 +105,6 @@ class UserDetail(APIView):
 class UserCheck(APIView):
 
     # permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request, format=None):
         """
         List all user
@@ -177,7 +181,7 @@ class UserBookmark(APIView):
 class UserTag(APIView):
     def get(self, request, id, format=None):
         user = get_active_user_or_404(id=id)
-        tag_name = request.GET.get('tag_name','')
+        tag_name = request.GET.get("tag_name", "")
         tils = Til.objects.filter(user=user).prefetch_related("tags")
 
         if tag_name:
@@ -212,3 +216,76 @@ class UserTag(APIView):
         return user_til_list
 
 
+# /////////////////////////////////////////////////
+# Following, Followers related views
+# /////////////////////////////////////////////////
+class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    # pagination_class
+    # permission_classes
+    # filter_backends
+
+
+class IsFollowingFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(user_id=request.user.id)
+
+
+class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    pagination_class = IdCursorPagination
+    # permission_classes
+    filter_backends = [IsFollowingFilterBackend]
+
+    def get(self, request, id, format=None):
+        return_count = bool(request.query_params.get("return_count", 0))
+        if return_count:
+            count = self.get_queryset().filter(user_id=request.user.id).count()
+            return Response(dict(count=count), status=status.HTTP_200_OK)
+        return self.list(request)
+
+    def post(self, request, id, format=None):
+        data = self.create(data=dict(user_id=request.user.id, following_user_id=id))
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id, format=None):
+        instance = self.get_instance_or_404(
+            user_id=request.user.id, following_user_id=id
+        )
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, data):
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return serializer.data
+
+    def get_instance_or_404(self, **query):
+        try:
+            instance = self.get_queryset().get(**query)
+        except exceptions.ObjectDoesNotExist as ex:
+            raise Http404
+        return instance
+
+
+class IsFollowersFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(following_user_id=view.follower_id)
+
+
+class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
+    queryset = UserFollow.objects.all()
+    serializer_class = UserFollowSerializer
+    pagination_class = IdCursorPagination
+    filter_backends = [IsFollowersFilterBackend]
+
+    def get(self, request, id, format=None):
+        return_count = bool(request.query_params.get("return_count", 0))
+        if return_count:
+            count = self.get_queryset().filter(user_id=id).count()
+            return Response(dict(count=count), status=status.HTTP_200_OK)
+        self.follower_id = id
+        return self.list(request)

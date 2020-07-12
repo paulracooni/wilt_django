@@ -8,72 +8,134 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wilt_user', '0001_initial'),
-        ('wilt_til', '0001_initial'),
+        ("wilt_user", "0001_initial"),
+        ("wilt_til", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Tag',
+            name="Tag",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='tag id')),
-                ('name', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True, serialize=False, verbose_name="tag id"
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
             ],
             options={
-                'verbose_name': '태그',
-                'verbose_name_plural': '태그',
-                'db_table': 'tag',
+                "verbose_name": "태그",
+                "verbose_name_plural": "태그",
+                "db_table": "tag",
             },
         ),
-        migrations.RenameField(
-            model_name='til',
-            old_name='author',
-            new_name='user',
-        ),
+        migrations.RenameField(model_name="til", old_name="author", new_name="user",),
         migrations.AddField(
-            model_name='til',
-            name='is_active',
-            field=models.BooleanField(default=True, verbose_name='is active'),
+            model_name="til",
+            name="is_active",
+            field=models.BooleanField(default=True, verbose_name="is active"),
         ),
         migrations.CreateModel(
-            name='TilTag',
+            name="TilTag",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='tiltag id')),
-                ('tag_name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_til.Tag')),
-                ('til', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_til.Til')),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True, serialize=False, verbose_name="tiltag id"
+                    ),
+                ),
+                (
+                    "tag_name",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="wilt_til.Tag"
+                    ),
+                ),
+                (
+                    "til",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="wilt_til.Til"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'TIL태그',
-                'verbose_name_plural': 'TIL태그',
-                'db_table': 'tiltag',
+                "verbose_name": "TIL태그",
+                "verbose_name_plural": "TIL태그",
+                "db_table": "tiltag",
             },
         ),
         migrations.CreateModel(
-            name='Clap',
+            name="Clap",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='clap id')),
-                ('date_created', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='date created')),
-                ('til', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_til.Til')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_user.WiltUser')),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True, serialize=False, verbose_name="clap id"
+                    ),
+                ),
+                (
+                    "date_created",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="date created",
+                    ),
+                ),
+                (
+                    "til",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="wilt_til.Til"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="wilt_user.WiltUser",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'clap',
-                'verbose_name_plural': 'claps',
-                'unique_together': {('user', 'til')},
+                "verbose_name": "clap",
+                "verbose_name_plural": "claps",
+                "unique_together": {("user", "til")},
             },
         ),
         migrations.CreateModel(
-            name='Bookmark',
+            name="Bookmark",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='bookmark id')),
-                ('date_created', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='date created')),
-                ('til', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_til.Til')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wilt_user.WiltUser')),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True, serialize=False, verbose_name="bookmark id"
+                    ),
+                ),
+                (
+                    "date_created",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="date created",
+                    ),
+                ),
+                (
+                    "til",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="wilt_til.Til"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="wilt_user.WiltUser",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'bookmark',
-                'verbose_name_plural': 'bookmarks',
-                'unique_together': {('user', 'til')},
+                "verbose_name": "bookmark",
+                "verbose_name_plural": "bookmarks",
+                "unique_together": {("user", "til")},
             },
         ),
     ]

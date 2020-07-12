@@ -6,21 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wilt_til', '0002_auto_20200711_0942'),
+        ("wilt_til", "0002_auto_20200711_0942"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='til',
-            name='tags',
-            field=models.ManyToManyField(related_name='til_tags', to='wilt_til.Tag'),
+            model_name="til",
+            name="tags",
+            field=models.ManyToManyField(related_name="til_tags", to="wilt_til.Tag"),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="tag",
+            name="id",
+            field=models.AutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
-        migrations.DeleteModel(
-            name='TilTag',
-        ),
+        migrations.DeleteModel(name="TilTag",),
     ]

@@ -52,3 +52,20 @@ class WiltUser(FirebaseUser):
     class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
+
+
+class UserFollow(models.Model):
+    user_id = models.ForeignKey(
+        WiltUser, related_name="following", on_delete=models.CASCADE
+    )
+    following_user_id = models.ForeignKey(
+        WiltUser, related_name="follower", on_delete=models.CASCADE
+    )
+    date_created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        unique_together = ("user_id", "following_user_id")
+        ordering = ["-date_created"]
+
+    def __str__(self):
+        f"{self.user_id} follows {self.following_user_id}"

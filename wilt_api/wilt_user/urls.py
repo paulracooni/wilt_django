@@ -9,6 +9,8 @@ urlpatterns = [
     path("<str:id>/claps", views.UserClaps.as_view()),
     path("<str:id>/bookmarks", views.UserBookmark.as_view()),
     path("<str:id>/tags", views.UserTag.as_view()),
+    path("<str:id>/following", views.UserFollowing.as_view()),
+    path("<str:id>/followers", views.UserFollowers.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

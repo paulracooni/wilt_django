@@ -38,9 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third Party
-    "tagging",
     # Local
-    "check_time",
     "firebase_authentication",
     "wilt_user",
     "wilt_til",
