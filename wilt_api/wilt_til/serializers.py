@@ -56,6 +56,7 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
             "id",
             "display_name",
             "picture",
+            "description",
             "company_name",
             "job_title",
             "career_year",
