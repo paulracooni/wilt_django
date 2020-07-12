@@ -204,7 +204,7 @@ class UserTag(APIView):
             response = Response(result, status=status.HTTP_200_OK)
         else:
             response = get_invalid_user_response(id=id) 
-        return Response(result, status=status.HTTP_200_OK)
+        return response
 
     @staticmethod
     def __count_tags_in_tils(tils):
