@@ -255,8 +255,11 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Response
+        instance = serializer.Meta.model.objects.get(id=serializer.data['id'])
+        response_serializer = FeedSerializer(instance)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         serializer = self.get_serializer(
