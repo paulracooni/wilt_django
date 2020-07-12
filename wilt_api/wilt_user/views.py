@@ -177,9 +177,16 @@ class UserBookmark(APIView):
 class UserTag(APIView):
     def get(self, request, id, format=None):
         user = get_active_user_or_404(id=id)
+        tag_name = request.GET.get('tag_name','')
         tils = Til.objects.filter(user=user).prefetch_related("tags")
-        tags = self.__count_tags_in_tils(tils)
-        return Response(tags, status=status.HTTP_200_OK)
+
+        if tag_name:
+            result = self.__til_info_about_tag(tils, tag_name)
+
+        else:
+            result = self.__count_tags_in_tils(tils)
+
+        return Response(result, status=status.HTTP_200_OK)
 
     @staticmethod
     def __count_tags_in_tils(tils):
@@ -191,3 +198,17 @@ class UserTag(APIView):
                 else:
                     tags[tag.name] = 1
         return tags
+
+    @staticmethod
+    def __til_info_about_tag(tils, tag):
+        user_til_list = []
+
+        for til in tils:
+            for tag_name in til.tags.all():
+                if tag_name.name == tag:
+                    user_til_list.append(TilSerializer(til).data)
+                    break
+
+        return user_til_list
+
+
