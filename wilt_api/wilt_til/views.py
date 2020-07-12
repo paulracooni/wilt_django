@@ -212,12 +212,16 @@ class FeedListCreate(generics.GenericAPIView):
         return response
 
     def post(self, request, *args, **kwargs):
+        # Save 
         data = extract_data_with_user_id_form(request)
         data["tags"] = parse_tag_and_create_if_new(data.get("tags", ""))
         serializer = TilSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Response
+        instance = serializer.Meta.model.objects.get(id=serializer.data['id'])
+        response_serializer = self.get_serializer(instance)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
