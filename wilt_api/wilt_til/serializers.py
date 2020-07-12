@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from wilt_til.models import Til, Clap, Bookmark, Tag
-from wilt_user.models import WiltUser
+from wilt_user.models import WiltUser, UserFollow
 from wilt_user.serializers import WiltUserSerializer
 
 __all__ = ("TilSerializer",)
@@ -53,15 +53,19 @@ class FeedSerializer(TilSerializer):
 class MiniWiltUserSerilizer(WiltUserSerializer):
     class Meta:
         fields = (
+            "id",
             "display_name",
             "picture",
             "company_name",
             "job_title",
             "career_year",
+            "n_following",
+            "n_followers",
+            "n_bookmark",
+            "n_clap"
         )
         model = WiltUser
-
-
+    
 class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
