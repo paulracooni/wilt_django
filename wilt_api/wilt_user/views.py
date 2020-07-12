@@ -41,9 +41,11 @@ def get_active_user_or_false(id):
         return False
     return user
 
+
 def get_invalid_user_response(id):
     detail = f"Invalid user id({id})."
     return Response(dict(detail=detail), status=status.HTTP_404_NOT_FOUND)
+
 
 class UserDetail(APIView):
 
@@ -85,7 +87,7 @@ class UserDetail(APIView):
         else:
             response = get_invalid_user_response(id)
         return response
-        
+
     def update(self, user, data, partial=True):
         fields = self.__filter_fields(data)
         serializer = self.__update(user, fields, partial=partial)
@@ -97,7 +99,6 @@ class UserDetail(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer
-
 
     @classmethod
     def __filter_fields(cls, fields):
@@ -166,7 +167,7 @@ class UserClaps(APIView):
                 til = TilSerializer(clap.til)
                 user_clap_list.append(til.data)
             response = Response(user_clap_list, status=status.HTTP_200_OK)
-        else: 
+        else:
             response = get_invalid_user_response(id=id)
         return response
 
@@ -182,8 +183,8 @@ class UserBookmark(APIView):
             for bookmark in queryset:
                 til = TilSerializer(bookmark.til)
                 user_bookmark_list.append(til.data)
-            response =  Response(user_bookmark_list, status=status.HTTP_200_OK)
-        else: 
+            response = Response(user_bookmark_list, status=status.HTTP_200_OK)
+        else:
             response = get_invalid_user_response(id=id)
         return response
 
@@ -203,7 +204,7 @@ class UserTag(APIView):
                 result = self.__count_tags_in_tils(tils)
             response = Response(result, status=status.HTTP_200_OK)
         else:
-            response = get_invalid_user_response(id=id) 
+            response = get_invalid_user_response(id=id)
         return response
 
     @staticmethod
@@ -264,24 +265,31 @@ class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
         data = self.create(data=dict(user_id=request.user.id, following_user_id=id))
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, id, format=None):
-        instance = self.get_instance_or_404(
-            user_id=request.user.id, following_user_id=id
-        )
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     def create(self, data):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer.data
 
-    def get_instance_or_404(self, **query):
+    def delete(self, request, id, format=None):
+        instance = self.get_instance_or_false(
+            user_id=request.user.id, following_user_id=id
+        )
+        if instance:    
+            instance.delete()
+            detail = f"{instance} is not true anymore!"
+            dict(detail=detail)
+            response = Response(status=status.HTTP_204_NO_CONTENT)
+        else: 
+            detail = f"ObjectDoesNotExist, user_id: {request.user.id}, following_user_id:{id}"
+            response = Response(dict(detail=detail), status=status.HTTP_404_NOT_FOUND)
+        return response
+
+    def get_instance_or_false(self, **query):
         try:
             instance = self.get_queryset().get(**query)
         except exceptions.ObjectDoesNotExist as ex:
-            raise Http404
+            return False
         return instance
 
 
