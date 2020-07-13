@@ -5,7 +5,17 @@ import sys
 
 
 def main():
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.settings")
+    WILT_ENV = os.environ.get('WILT_ENV', 'development')
+
+    if WILT_ENV == 'development':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wilt_api.dev')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wilt_api.pro')
+
+    # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.settings")
+
+    print("manage WILT ENV: {}".format(WILT_ENV))
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -19,3 +29,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
