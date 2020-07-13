@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from password import ACCESSS_KEY_ID, SECRET_ACCESS_KEY, REGION, STORAGE_BUCKET_NAME
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     "firebase_authentication",
     "wilt_user",
     "wilt_til",
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -80,20 +83,12 @@ WSGI_APPLICATION = "wilt_api.wsgi.application"
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'wilt_db',
-        'USER': 'root',
-        'PASSWORD': 'wilt',
-        'HOST': '127.0.0.1',
-        'PORT': '4404',
-        'CONN_MAX_AGE': 600,
-        'OPTIONS': {
-            'init_command': 'SET default_storage_engine=INNODB, character_set_connection=utf8mb4, collation_connection=utf8mb4_unicode_ci',
-            'charset':'utf8mb4',
-        },
-    },
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    }
 }
+
 
 
 # Password validation
@@ -141,3 +136,24 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
 }
+
+
+###########################AWS
+AWS_ACCESS_KEY_ID = ACCESSS_KEY_ID
+AWS_SECRET_ACCESS_KEY = SECRET_ACCESS_KEY
+AWS_REGION = REGION
+
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_HOST = 's3.%s.amazonaws.com'
+
+###S3 Storages
+AWS_STORAGE_BUCKET_NAME = STORAGE_BUCKET_NAME # 설정한 버킷 이름
+
+AWS_S3_CUSTOM_DOMAIN = 's3.%s.amazonaws.com/%s' % (AWS_REGION,AWS_STORAGE_BUCKET_NAME)
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
