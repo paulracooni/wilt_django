@@ -230,6 +230,26 @@ class UserTag(APIView):
 
         return user_til_list
 
+# 유저의 TIL을 가져오는 view
+class UserTils(APIView):
+
+    def get(self, request, id, format=None):
+
+        result = []
+        user = WiltUser.objects.get(id=id)
+        print(user)
+        active_user = get_active_user_or_false(id=id)
+        if active_user:
+            user_til_list = Til.objects.filter(user=active_user)
+
+            for til in user_til_list:
+                result.append(TilSerializer(til).data)
+
+            response = Response(result, status=status.HTTP_200_OK)
+        else:
+            response = get_invalid_user_response(id=id)
+
+        return response
 
 # /////////////////////////////////////////////////
 # Following, Followers related views
@@ -311,3 +331,5 @@ class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
             return Response(dict(count=count), status=status.HTTP_200_OK)
         self.follower_id = id
         return self.list(request)
+
+

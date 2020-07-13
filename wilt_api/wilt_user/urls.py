@@ -11,6 +11,7 @@ urlpatterns = [
     path("<str:id>/tags", views.UserTag.as_view()),
     path("<str:id>/following", views.UserFollowing.as_view()),
     path("<str:id>/followers", views.UserFollowers.as_view()),
+    path("<str:id>/tils", views.UserTils.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
