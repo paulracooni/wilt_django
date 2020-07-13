@@ -236,8 +236,6 @@ class UserTils(APIView):
     def get(self, request, id, format=None):
 
         result = []
-        user = WiltUser.objects.get(id=id)
-        print(user)
         active_user = get_active_user_or_false(id=id)
         if active_user:
             user_til_list = Til.objects.filter(user=active_user)
