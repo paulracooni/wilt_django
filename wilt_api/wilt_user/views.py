@@ -231,6 +231,7 @@ class UserTag(APIView):
         return user_til_list
 
 # 유저의 TIL을 가져오는 view
+# 페이지 네이션 적용 필
 class UserTils(APIView):
 
     def get(self, request, id, format=None):
@@ -249,6 +250,32 @@ class UserTils(APIView):
 
         return response
 
+# 유저의 til 갯수/ 응원 갯수 / 북마크 갯수를 불러오는 view
+class UserTotalCount(APIView):
+
+    def get(self, request, id, format=None):
+        result = []
+        active_user = get_active_user_or_false(id=id)
+
+        if active_user:
+            # 유저의 til 갯수
+            user_til_count = len(Til.objects.filter(user=active_user))
+
+            # 유저의 응원 갯수
+            user_clap_count = len(Clap.objects.filter(til__user=active_user))
+
+            # 유저의 북마크 갯수
+            user_bookmark_count = len(Bookmark.objects.filter(user=active_user))
+
+            result['user_til_count'] = user_til_count
+            result['user_clap_count'] = user_clap_count
+            result['user_bookmark_count'] = user_bookmark_count
+
+            response = Response(result, status=status.HTTP_200_OK)
+        else:
+            response = get_invalid_user_response(id=id)
+
+        return response
 # /////////////////////////////////////////////////
 # Following, Followers related views
 # /////////////////////////////////////////////////
