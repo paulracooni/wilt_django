@@ -63,10 +63,11 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
             "n_following",
             "n_followers",
             "n_bookmark",
-            "n_clap"
+            "n_clap",
         )
         model = WiltUser
-    
+
+
 class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap

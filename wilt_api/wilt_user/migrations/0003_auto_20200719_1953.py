@@ -6,13 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wilt_user', '0002_userfollow'),
+        ("wilt_user", "0002_userfollow"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='wiltuser',
-            name='job_title',
-            field=models.CharField(blank=True, choices=[('PL', 'Planer'), ('DS', 'Designer'), ('DV', 'Developer'), ('MK', 'Marketer'), ('DT', 'DataScientist')], max_length=2, null=True, verbose_name='job title'),
+            model_name="wiltuser",
+            name="job_title",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("PL", "Planer"),
+                    ("DS", "Designer"),
+                    ("DV", "Developer"),
+                    ("MK", "Marketer"),
+                    ("DT", "DataScientist"),
+                ],
+                max_length=2,
+                null=True,
+                verbose_name="job title",
+            ),
         ),
     ]

@@ -101,7 +101,7 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
                 valid_query["user__job_title"] = val
             elif hasattr(model, key):
                 valid_query[key] = val
-        
+
         return valid_query
 
     def __get_tags(self, tags):
@@ -112,6 +112,7 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
             except Tag.DoesNotExist:
                 pass
         return instances
+
 
 # ////////////////////////////////////////////
 # Define Pagination
@@ -209,14 +210,14 @@ class FeedListCreate(generics.GenericAPIView):
         return response
 
     def post(self, request, *args, **kwargs):
-        # Save 
+        # Save
         data = extract_data_with_user_id_form(request)
         data["tags"] = parse_tag_and_create_if_new(data.get("tags", ""))
         serializer = TilSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         # Response
-        instance = serializer.Meta.model.objects.get(id=serializer.data['id'])
+        instance = serializer.Meta.model.objects.get(id=serializer.data["id"])
         response_serializer = self.get_serializer(instance)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -252,9 +253,9 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
-        
+
         # Response
-        instance = serializer.Meta.model.objects.get(id=serializer.data['id'])
+        instance = serializer.Meta.model.objects.get(id=serializer.data["id"])
         response_serializer = FeedSerializer(instance)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 

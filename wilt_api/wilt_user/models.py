@@ -20,6 +20,7 @@ JOBTITLE_CHOICES = [
     ("DT", _("DataScientist")),
 ]
 
+
 class WiltUser(FirebaseUser):
     """
     Inherited from firebase_authentication.models.User
@@ -45,7 +46,9 @@ class WiltUser(FirebaseUser):
 
     company_name = models.CharField(_("company name"), max_length=20, **nullable)
 
-    job_title = models.CharField(_("job title"), max_length=2, choices=JOBTITLE_CHOICES, **nullable)
+    job_title = models.CharField(
+        _("job title"), max_length=2, choices=JOBTITLE_CHOICES, **nullable
+    )
 
     career_year = models.DecimalField(
         _("company name"), max_digits=3, decimal_places=0, **nullable

@@ -5,12 +5,12 @@ import sys
 
 
 def main():
-    WILT_ENV = os.environ.get('WILT_ENV', 'development')
+    WILT_ENV = os.environ.get("WILT_ENV", "development")
 
-    if WILT_ENV == 'development':
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wilt_api.dev')
+    if WILT_ENV == "development":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.dev")
     else:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wilt_api.pro')
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.pro")
 
     # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.settings")
 
@@ -29,4 +29,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
