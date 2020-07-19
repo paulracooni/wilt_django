@@ -6,3 +6,4 @@ dev_*
 db.sqlite3
 drf_api
 firebase_key.json
+password.py

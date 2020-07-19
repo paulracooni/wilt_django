@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 from wilt_til.models import Clap, Bookmark, Til, Tag
-from wilt_til.serializers import TilSerializer
+from wilt_til.serializers import TilSerializer, FeedSerializer
 from wilt_til.views import IdCursorPagination
 
 from wilt_user.models import WiltUser, UserFollow
@@ -175,13 +175,13 @@ class UserClaps(APIView):
 # User가 북마크한 Til 목록을 불러오는 view
 class UserBookmark(APIView):
     def get(self, request, id, format=None):
+
         active_user = get_active_user_or_false(id=id)
         if active_user:
             queryset = Bookmark.objects.select_related("til").filter(user=active_user)
             user_bookmark_list = []
-
             for bookmark in queryset:
-                til = TilSerializer(bookmark.til)
+                til = FeedSerializer(bookmark.til)
                 user_bookmark_list.append(til.data)
             response = Response(user_bookmark_list, status=status.HTTP_200_OK)
         else:
