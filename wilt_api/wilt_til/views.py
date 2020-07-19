@@ -87,7 +87,8 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
             query = self.build_query(valid_query_params)
 
             if 'user' in query:
-                queryset.filter(user__job_title=query['user'])
+                user_dic = {"PL":"기획자", "DV":"개발자", "DS":"디자이너", "MK":"마케터"}
+                queryset.filter(user__job_title=user_dic[query['user']])
                 query.pop('user')
 
             queryset = queryset.filter(**query)
