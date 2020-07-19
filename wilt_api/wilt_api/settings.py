@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third Party
-    "storages",
+    # "storages",
     # Local
     "wilt_backend",
     # "firebase_authentication",
