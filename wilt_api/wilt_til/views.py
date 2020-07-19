@@ -85,6 +85,11 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
 
         if valid_query_params:
             query = self.build_query(valid_query_params)
+
+            if 'user' in query:
+                queryset.filter(user__job_title=query['user'])
+                query.pop('user')
+
             queryset = queryset.filter(**query)
 
         return queryset
@@ -100,9 +105,10 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
         for key, val in query_params.items():
             if key == "tags":
                 query["tags__in"] = self.__get_tags(val)
+            elif key == 'content':
+                query["content__contains"] = val
             else:
                 query[key] = val
-
         return query
 
     def __get_tags(self, tags):
