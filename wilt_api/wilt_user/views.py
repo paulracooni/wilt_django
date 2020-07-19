@@ -254,18 +254,18 @@ class UserTils(APIView):
 class UserTotalCount(APIView):
 
     def get(self, request, id, format=None):
-        result = []
+        result = dict()
         active_user = get_active_user_or_false(id=id)
 
         if active_user:
             # 유저의 til 갯수
-            user_til_count = len(Til.objects.filter(user=active_user))
+            user_til_count = Til.objects.filter(user=active_user).count()
 
             # 유저의 응원 갯수
-            user_clap_count = len(Clap.objects.filter(til__user=active_user))
+            user_clap_count = Clap.objects.filter(til__user=active_user).count()
 
             # 유저의 북마크 갯수
-            user_bookmark_count = len(Bookmark.objects.filter(user=active_user))
+            user_bookmark_count = Bookmark.objects.filter(user=active_user).count()
 
             result['user_til_count'] = user_til_count
             result['user_clap_count'] = user_clap_count
