@@ -1,30 +1,22 @@
-import json
-from django.http import Http404, HttpResponse
+from rest_framework import status, mixins, generics, pagination
 
-from rest_framework import status, generics, mixins, filters
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.settings import api_settings
 
-from firebase_authentication import exceptions
-from firebase_authentication import permissions
-from wilt_til.models import Clap, Bookmark, Til, Tag
-from wilt_til.serializers import FeedSerializer
-from wilt_til.views import IdCursorPagination
+from wilt_backend import exceptions
+from wilt_backend import permissions
 
-from wilt_user.models import WiltUser, UserFollow
-from wilt_user.serializers import WiltUserSerializer
-from wilt_user.serializers import UserFollowSerializer
+from wilt_backend.utils import *
+from wilt_backend.models import *
+from wilt_backend.generics import *
+from wilt_backend.serializers import *
+from wilt_backend.views.helpers import *
 
 from firebase_admin import auth
 
-__all__ = (
-    "UserCheck",
-    "UserDetail",
-    "UserTag",
-    "UserClaps",
-    "UserBookmark",
-)
+from ast import literal_eval
 
 
 def get_user_or_false(id):
@@ -289,11 +281,6 @@ class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
     # filter_backends
 
 
-class IsFollowingFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return queryset.filter(user_id=request.user.id)
-
-
 class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = UserFollow.objects.all()
     serializer_class = UserFollowSerializer
@@ -338,11 +325,6 @@ class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
         except exceptions.ObjectDoesNotExist as ex:
             return False
         return instance
-
-
-class IsFollowersFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return queryset.filter(following_user_id=view.follower_id)
 
 
 class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):

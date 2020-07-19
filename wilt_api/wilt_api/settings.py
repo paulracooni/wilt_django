@@ -40,11 +40,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third Party
-    # Local
-    "firebase_authentication",
-    "wilt_user",
-    "wilt_til",
     "storages",
+    # Local
+    "wilt_backend",
+    # "firebase_authentication",
+    # "wilt_user",
+    # "wilt_til",
 ]
 
 MIDDLEWARE = [
@@ -53,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
-    "firebase_authentication.authentication.FirebaseAuthMiddleware",
+    "wilt_backend.authentication.FirebaseAuthMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -115,12 +116,12 @@ STATIC_URL = "/static/"
 
 ## Firebase authentication settings
 FIREBASE_PATH = os.path.join(BASE_DIR, "..", "firebase_key.json")
-AUTH_USER_MODEL = "firebase_authentication.User"
+AUTH_USER_MODEL = "wilt_backend.WiltUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         # The default authentication schemes may be set globally.
-        "firebase_authentication.authentication.FirebaseAuthentication",
+        "wilt_backend.authentication.FirebaseAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
 }

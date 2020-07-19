@@ -1,10 +1,8 @@
 from django.contrib.auth.models import UserManager as DefaultUserManager
 
 from firebase_admin import auth
-from firebase_authentication.exceptions import UserNotFound
-from firebase_authentication.exceptions import UserEmailNotMatched
-
-__all__ = ("UserManager",)
+from wilt_backend.exceptions import UserNotFound
+from wilt_backend.exceptions import UserEmailNotMatched
 
 
 class UserManager(DefaultUserManager):

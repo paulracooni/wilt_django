@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from wilt_user.views import UserCheck
+
+# from wilt_user.views import UserCheck
 
 urlpatterns = [
+    path("", include("wilt_backend.urls")),
     path("admin/", admin.site.urls),
-    path("users/", include("wilt_user.urls")),
-    path("tils/", include("wilt_til.urls")),
+    # path("users/", include("wilt_user.urls")),
+    # path("tils/", include("wilt_til.urls")),
 ]

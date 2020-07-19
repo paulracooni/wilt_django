@@ -1,19 +1,27 @@
 from django.db import models
 from django.utils import timezone
+
+from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
-from wilt_user.models import WiltUser
+from wilt_backend.managers import UserManager
 
-__all__ = (
-    "Tag",
-    "Til",
-    "Clap",
-    "Bookmark",
-)
+# Models defined as bellow.
+__all__ = ("WiltUser", "UserFollow", "Tag", "Til", "Clap", "Bookmark")
+
+nullable = dict(null=True, blank=True)
+domain_id = dict(max_length=28, primary_key=True, db_index=True, unique=True)
+domain_name = dict(max_length=20, unique=True, null=True, blank=True)
 
 # ////////////////////////////////////////////////////////////
-# Define Models
-# ////////////////////////////////////////////////////////////
+JOBTITLE_CHOICES = [
+    ("PL", _("Planer")),
+    ("DS", _("Designer")),
+    ("DV", _("Developer")),
+    ("MK", _("Marketer")),
+    ("DT", _("DataScientist")),
+]
+
 CATEGORY_CHOICES = [
     ("PL", _("Plan")),
     ("DS", _("Design")),
@@ -21,6 +29,64 @@ CATEGORY_CHOICES = [
     ("MK", _("Marketing")),
     ("DT", _("Data")),
 ]
+
+
+class WiltUser(AbstractUser):
+
+    username = None
+    first_name = None
+    last_name = None
+
+    id = models.CharField(**domain_id)
+
+    display_name = models.CharField(_("display name"), **domain_name)
+
+    email = models.EmailField(_("email address"), unique=True)
+
+    picture = models.URLField(_("picture"), **nullable)
+
+    company_name = models.CharField(_("company name"), max_length=20, **nullable)
+
+    job_title = models.CharField(
+        _("job title"), max_length=2, choices=JOBTITLE_CHOICES, **nullable
+    )
+
+    career_year = models.DecimalField(
+        _("company name"), max_digits=3, decimal_places=0, **nullable
+    )
+
+    description = models.TextField(_("user description"), **nullable)
+
+    web_link = models.TextField(_("web link"), **nullable)
+
+    objects = UserManager()
+
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
+    class Meta:
+        db_table = "wilt_user"
+        verbose_name = _("user")
+        verbose_name_plural = _("users")
+
+
+class UserFollow(models.Model):
+    user_id = models.ForeignKey(
+        WiltUser, related_name="following", on_delete=models.CASCADE
+    )
+    following_user_id = models.ForeignKey(
+        WiltUser, related_name="follower", on_delete=models.CASCADE
+    )
+    date_created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "user_follow"
+        unique_together = ("user_id", "following_user_id")
+        ordering = ["-date_created"]
+
+    def __str__(self):
+        f"{self.user_id} follows {self.following_user_id}"
 
 
 class Tag(models.Model):
@@ -62,7 +128,7 @@ class Til(models.Model):
     # objects = TilManager()
 
     class Meta:
-        # db_table = "til"
+        db_table = "til"
         verbose_name = _("til")
         verbose_name_plural = _("tils")
 
@@ -76,7 +142,7 @@ class Clap(models.Model):
     )
 
     class Meta:
-        # db_table = "clap"
+        db_table = "clap"
         verbose_name = _("clap")
         verbose_name_plural = _("claps")
         unique_together = (("user", "til",),)
@@ -91,7 +157,7 @@ class Bookmark(models.Model):
     )
 
     class Meta:
-        # db_table = "bookmark"
+        db_table = "bookmark"
         verbose_name = _("bookmark")
         verbose_name_plural = _("bookmarks")
         unique_together = (("user", "til",),)

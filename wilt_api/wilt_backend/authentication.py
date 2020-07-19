@@ -1,5 +1,3 @@
-__all__ = "FirebaseAuthentication", "FirebaseAuthMiddleware", "firebase_app"
-
 from django.conf import settings
 from django.contrib.auth import get_user_model, middleware
 from django.contrib.auth.models import AnonymousUser, update_last_login
@@ -7,11 +5,12 @@ from django.contrib.auth.models import AnonymousUser, update_last_login
 import firebase_admin
 import firebase_authentication
 from django.utils.functional import SimpleLazyObject
+
 from firebase_admin import auth
 from rest_framework import authentication, exceptions
-from . import exceptions
 
-from wilt_user.models import WiltUser
+from wilt_backend import exceptions
+from wilt_backend.models import WiltUser
 
 UserModel = get_user_model()
 credentials = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
