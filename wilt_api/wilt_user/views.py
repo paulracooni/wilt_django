@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 from wilt_til.models import Clap, Bookmark, Til, Tag
-from wilt_til.serializers import TilSerializer, FeedSerializer
+from wilt_til.serializers import FeedSerializer
 from wilt_til.views import IdCursorPagination
 
 from wilt_user.models import WiltUser, UserFollow
@@ -164,7 +164,7 @@ class UserClaps(APIView):
             queryset = Clap.objects.select_related("til").filter(user=active_user)
             user_clap_list = []
             for clap in queryset:
-                til = TilSerializer(clap.til)
+                til = FeedSerializer(clap.til)
                 user_clap_list.append(til.data)
             response = Response(user_clap_list, status=status.HTTP_200_OK)
         else:
@@ -225,7 +225,7 @@ class UserTag(APIView):
         for til in tils:
             for tag_name in til.tags.all():
                 if tag_name.name == tag:
-                    user_til_list.append(TilSerializer(til).data)
+                    user_til_list.append(FeedSerializer(til).data)
                     break
 
         return user_til_list
@@ -242,7 +242,7 @@ class UserTils(APIView):
             user_til_list = Til.objects.filter(user=active_user)
 
             for til in user_til_list:
-                result.append(TilSerializer(til).data)
+                result.append(FeedSerializer(til).data)
 
             response = Response(result, status=status.HTTP_200_OK)
         else:
