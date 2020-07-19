@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from wilt_user.models import WiltUser, UserFollow
-from wilt_til.models import Bookmark, Clap
+from wilt_til.models import Til, Bookmark, Clap
 
 __all__ = ("WiltUserSerializer",)
 
@@ -19,6 +19,7 @@ class WiltUserSerializer(serializers.ModelSerializer):
     n_followers = serializers.SerializerMethodField()
     n_bookmark = serializers.SerializerMethodField()
     n_clap = serializers.SerializerMethodField()
+    n_til = serializers.SerializerMethodField()
 
     class Meta:
         model = WiltUser
@@ -35,6 +36,9 @@ class WiltUserSerializer(serializers.ModelSerializer):
 
     def get_n_clap(self, obj):
         return Clap.objects.filter(user=obj.id).count()
+
+    def get_n_til(self, obj):
+        return Til.objects.filter(user=obj.id).count()
 
     def get_n_following(self, obj):
         return UserFollow.objects.filter(user_id=obj.id).count()
