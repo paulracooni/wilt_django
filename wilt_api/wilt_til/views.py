@@ -15,6 +15,7 @@ from rest_framework.settings import api_settings
 from firebase_authentication import exceptions
 from firebase_authentication import permissions
 
+from wilt_user.models import WiltUser
 from wilt_til.models import Til, Clap, Bookmark, Tag  # , TilTag
 from wilt_til.generics import TilRelationAPIView
 from wilt_til.serializers import TilSerializer
@@ -79,38 +80,29 @@ class IsTilRealtedFilterBackend(filters.BaseFilterBackend):
 class TilSearchingFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
 
-        valid_query_params = self.filter_valid_query(
+        valid_query = self.build_valid_query(
             model=queryset.model, query_params=request.query_params
         )
 
-        if valid_query_params:
-            query = self.build_query(valid_query_params)
-
-            if 'user' in query:
-                user_dic = {"PL":"기획자", "DV":"개발자", "DS":"디자이너", "MK":"마케터"}
-                queryset.filter(user__job_title=user_dic[query['user']])
-                query.pop('user')
-
-            queryset = queryset.filter(**query)
+        if valid_query:
+            queryset = queryset.filter(**valid_query)
 
         return queryset
 
-    def filter_valid_query(self, model, query_params):
-        valid_query = dict(
-            [(key, val) for key, val in query_params.items() if hasattr(model, key)]
-        )
-        return valid_query
+    def build_valid_query(self, model, query_params):
 
-    def build_query(self, query_params):
-        query = dict()
+        valid_query = dict()
         for key, val in query_params.items():
             if key == "tags":
-                query["tags__in"] = self.__get_tags(val)
-            elif key == 'content':
-                query["content__contains"] = val
-            else:
-                query[key] = val
-        return query
+                valid_query["tags__in"] = self.__get_tags(val)
+            elif key == "content":
+                valid_query["content__contains"] = val
+            elif key == "job_title":
+                valid_query["user__job_title"] = val
+            elif hasattr(model, key):
+                valid_query[key] = val
+        
+        return valid_query
 
     def __get_tags(self, tags):
         instances = []
@@ -119,9 +111,7 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
                 instances.append(Tag.objects.get(name=name))
             except Tag.DoesNotExist:
                 pass
-
         return instances
-
 
 # ////////////////////////////////////////////
 # Define Pagination

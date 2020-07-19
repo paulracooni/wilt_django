@@ -19,6 +19,7 @@ JOBTITLE_CHOICES = [
     ("MK", _("Marketer")),
     ("DT", _("DataScientist")),
 ]
+
 class WiltUser(FirebaseUser):
     """
     Inherited from firebase_authentication.models.User
