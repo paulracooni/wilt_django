@@ -2,11 +2,12 @@ FROM ubuntu:latest
 MAINTAINER paulkim "paulracooni@gmail.com"
 
 RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev \
+  && apt-get install -y python3-pip python3-dev default-libmysqlclient-dev build-essential \
   && cd /usr/local/bin \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
+RUN export WILT_ENV=production
 WORKDIR /usr/wilt_django
 COPY . ./
 RUN pip install -r requirements.txt
