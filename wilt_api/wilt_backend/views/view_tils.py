@@ -56,7 +56,7 @@ class FeedListCreate(generics.GenericAPIView):
     queryset = Til.objects.all()
     serializer_class = FeedSerializer
     pagination_class = IdCursorPagination
-    permission_classes = [permissions.IsAuthor]
+    permission_classes = [permissions.IsAllowAnonymousToGetAnonymous]
     filter_backends = [
         IsActiveFilterBackend,
         IsPublicOrMineFilterBackend,
