@@ -5,6 +5,7 @@ from rest_framework import pagination
 
 
 from wilt_backend.utils import *
+from wilt_backend.models import *
 
 # ////////////////////////////////////////////
 # Define filters

@@ -40,13 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third Party
-    # "storages",
-    # Local
     "wilt_backend",
-    # "firebase_authentication",
-    # "wilt_user",
-    # "wilt_til",
 ]
 
 MIDDLEWARE = [
