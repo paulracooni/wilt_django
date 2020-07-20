@@ -66,8 +66,12 @@ class TilSearchingFilterBackend(filters.BaseFilterBackend):
                 valid_query["tags__in"] = self.__get_tags(val)
             elif key == "content":
                 valid_query["content__contains"] = val
+            elif key == "title":
+                valid_query["title__contains"] = val
             elif key == "job_title":
                 valid_query["user__job_title"] = val
+            elif key == "user__id":
+                valid_query["user__id"] = val
             elif hasattr(model, key):
                 valid_query[key] = val
 
