@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+# FROM ubuntu:latest
 MAINTAINER paulkim "paulracooni@gmail.com"
 
 RUN apt-get update \
@@ -17,3 +17,6 @@ RUN python manage.py makemigrations
 RUN python manage.py migrate
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 # ENTRYPOINT ["python3"]
+
+# WILT_ENV=production
+# set WILT_ENV=production
