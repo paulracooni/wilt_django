@@ -23,6 +23,7 @@ urlpatterns = [
     path("users/<str:id>/totalcount/", view_users.UserTotalCount.as_view()),
     # Policy retrive endpoints
     path("policy/", view_policy.PolicyRetrieve.as_view()),
+    path("s3auth/", view_policy.S3AuthInfoRetrieve.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
