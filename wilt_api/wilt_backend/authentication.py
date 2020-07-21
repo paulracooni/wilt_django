@@ -6,11 +6,15 @@ import firebase_admin
 import firebase_authentication
 from django.utils.functional import SimpleLazyObject
 
+from django.contrib.auth import get_user
+
 from firebase_admin import auth
 from rest_framework import authentication, exceptions
 
 from wilt_backend import exceptions
 from wilt_backend.models import WiltUser
+
+from wilt_api.settings import DEBUG, DEVELOP_CODE
 
 UserModel = get_user_model()
 credentials = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
@@ -56,7 +60,9 @@ def get_or_create_user(user_data):
 
     user, created = WiltUser.objects.get_or_create(
         id=user_data.get("uid"),
-        defaults=dict(email=user_data.get("email", None), display_name=None, picture=None),
+        defaults=dict(
+            email=user_data.get("email", None), display_name=None, picture=None
+        ),
     )  # WiltUser.objects.get_or_create
 
     # Update user picture it no picture
@@ -76,9 +82,23 @@ class AuthenticationMixin:
 
     def authenticate(self, request):
 
+        # For Staff User on Admin page
+        user = get_user(request)
+        if user and user.is_staff:
+            return user
+
+        # For DEVELOPER
         token = self.get_auth_token(request)
+        if DEBUG and token == DEVELOP_CODE:
+            user = AnonymousUser()
+            setattr(user, "is_superuser", True)
+            return user
+
+        # For Wilt User and Anonymous User
         user_data = verify_user_token(token)
-        return get_or_anonymous(user_data)
+        user = get_or_anonymous(user_data)
+
+        return user
 
 
 class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthentication):
@@ -90,7 +110,6 @@ class FirebaseAuthentication(AuthenticationMixin, authentication.BaseAuthenticat
             raise exceptions.NoAuthToken()
 
     def authenticate(self, request):
-
         user = super(FirebaseAuthentication, self).authenticate(request)
         auth = None if isinstance(user, AnonymousUser) else "FirebaseAuth"
         return user, auth
@@ -100,11 +119,10 @@ class FirebaseAuthMiddleware(AuthenticationMixin, middleware.AuthenticationMiddl
     @staticmethod
     def get_auth_token(request):
         try:
-            return request.META.get(
-                "HTTP_AUTHORIZATION"
-            )  # request.COOKIES.get('access_token')
+            return request.META.get("HTTP_AUTHORIZATION")
         except Exception:
             raise exceptions.NoAuthToken()
 
     def process_request(self, request):
+
         request.user = SimpleLazyObject(lambda: self.authenticate(request))

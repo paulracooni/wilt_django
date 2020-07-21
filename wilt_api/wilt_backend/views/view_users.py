@@ -228,7 +228,7 @@ class UserTag(APIView):
 class UserTils(APIView):
     def get(self, request, id, format=None):
 
-        category = request.GET.get('category', '')
+        category = request.GET.get("category", "")
         result = {}
         user_category_list = []
         user_til = []
@@ -247,8 +247,8 @@ class UserTils(APIView):
 
                 user_til.append(FeedSerializer(til).data)
 
-            result['user_category_list'] = user_category_list
-            result['user_til_list'] = user_til
+            result["user_category_list"] = user_category_list
+            result["user_til_list"] = user_til
             response = Response(result, status=status.HTTP_200_OK)
         else:
             response = get_invalid_user_response(id=id)

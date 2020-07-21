@@ -45,6 +45,7 @@ class IsAuthor(permissions.BasePermission):
 
         return obj.user.id == request.user.id
 
+
 class IsAllowAnonymousToGetAnonymous(permissions.BasePermission):
     def has_permission(slef, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -56,6 +57,7 @@ class IsAllowAnonymousToGetAnonymous(permissions.BasePermission):
             return True
 
         return obj.user.id == request.user.id
+
 
 class IsAuthorOrReadonly(permissions.BasePermission):
     def has_permission(self, request, view):

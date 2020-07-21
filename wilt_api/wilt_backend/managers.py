@@ -9,11 +9,13 @@ class UserManager(DefaultUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault("display_name", email.split("@")[0])
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("display_name", email.split("@")[0])
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
@@ -32,6 +34,8 @@ class UserManager(DefaultUserManager):
             disabled=False,
         )
         user = self.model(id=auth_user.uid, email=email, **extra_fields)
+        if password:
+            user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -44,6 +48,7 @@ class UserManager(DefaultUserManager):
             photo_url=extra_fields.get("picture", user.picture),
         )
         user = self.__update_user(user, extra_fields)
+
         user.save(using=self._db)
         return user
 
