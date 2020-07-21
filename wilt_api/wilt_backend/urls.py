@@ -3,6 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from wilt_backend.views import view_tils
 from wilt_backend.views import view_users
+from wilt_policy import views as view_policy
 
 urlpatterns = [
     # Til related endpoints
@@ -20,6 +21,8 @@ urlpatterns = [
     path("users/<str:id>/followers/", view_users.UserFollowers.as_view()),
     path("users/<str:id>/tils/", view_users.UserTils.as_view()),
     path("users/<str:id>/totalcount/", view_users.UserTotalCount.as_view()),
+    # Policy retrive endpoints
+    path("policy/", view_policy.PolicyRetrieve.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

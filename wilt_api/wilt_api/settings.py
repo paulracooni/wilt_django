@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "wilt_backend",
+    "wilt_policy",
 ]
 
 MIDDLEWARE = [
