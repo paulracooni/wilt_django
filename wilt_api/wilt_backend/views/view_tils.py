@@ -73,7 +73,7 @@ class FeedListCreate(generics.GenericAPIView):
         serializer = self.get_serializer(queryset, many=True)
 
         response_data = attach_additional_data(
-            data=serializer.data, user_id=request.user.id
+            data=serializer.data, user_id=getattr(request.user, "id", None)
         )
 
         if page is not None:
@@ -107,7 +107,7 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         serializer = FeedSerializer(instance)
         response_data = attach_additional_data(
-            data=serializer.data, user_id=request.user.id
+            data=serializer.data, user_id=getattr(request.user, "id", None)
         )
         return Response(response_data, status=status.HTTP_200_OK)
 
