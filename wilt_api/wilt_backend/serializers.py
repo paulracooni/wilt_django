@@ -77,14 +77,6 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
         model = WiltUser
 
 
-class MixInUserInfo:
-    user = serializers.SerializerMethodField()
-
-    def get_user(self, obj):
-        user = WiltUser.objects.get(id=obj.user.id)
-        return MiniWiltUserSerilizer(user).data
-
-
 class UserFollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFollow
@@ -135,13 +127,25 @@ class BookmarkSerializer(serializers.ModelSerializer):
         read_only_fields = GLOBAL_ROF
 
 
-class FeedSerializer(MixInUserInfo, TilSerializer):
-    pass
+class FeedSerializer(TilSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
 
 
-class ClapUserInfoSerializer(MixInUserInfo, ClapSerializer):
-    pass
+class ClapUserInfoSerializer(ClapSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
 
 
-class BookmarkUserInfoSerializer(MixInUserInfo, BookmarkSerializer):
-    pass
+class BookmarkUserInfoSerializer(BookmarkSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data

@@ -1,3 +1,5 @@
+from django.db.models import Subquery, OuterRef
+
 from rest_framework import status, mixins, generics, pagination
 
 from rest_framework.views import APIView
@@ -153,12 +155,17 @@ class UserClaps(APIView):
     def get(self, request, id, format=None):
         active_user = get_active_user_or_false(id=id)
         if active_user:
-            queryset = Clap.objects.select_related("til").filter(user=active_user)
-            user_clap_list = []
-            for clap in queryset:
-                til = FeedSerializer(clap.til)
-                user_clap_list.append(til.data)
-            response = Response(user_clap_list, status=status.HTTP_200_OK)
+            queryset_clap = Clap.objects.select_related("til").filter(user=active_user)
+            queryset_til = Til.objects.filter(
+                id__in=[clap.til.id for clap in queryset_clap]
+            )
+
+            serializer = FeedSerializer(queryset_til, many=True)
+            # user_clap_list = []
+            # for clap in queryset:
+            #     tils = FeedSerializer(tils)
+            #     user_clap_list.append(til.data)
+            response = Response(serializer.data, status=status.HTTP_200_OK)
         else:
             response = get_invalid_user_response(id=id)
         return response
