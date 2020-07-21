@@ -7,7 +7,6 @@ from rest_framework.settings import api_settings
 
 from wilt_backend import exceptions
 from wilt_backend import permissions
-
 from wilt_backend.utils import *
 from wilt_backend.models import *
 from wilt_backend.generics import *
@@ -32,17 +31,17 @@ def parse_tag_and_create_if_new(tags):
     return tags
 
 
-def attach_additional_data(data, user_id):
+def attach_did_something(data, user_id):
     def attach(data, user_id):
         til_id = data.get("id")
         if user_id is not None:
-            additional_data = dict(
+            did_something = dict(
                 did_clap=Clap.objects.filter(user=user_id, til=til_id).exists(),
                 did_bookmark=Bookmark.objects.filter(user=user_id, til=til_id).exists(),
             )
         else:
-            additional_data = dict(did_clap=False, did_bookmark=False,)
-        data.update(additional_data)
+            did_something = dict(did_clap=False, did_bookmark=False,)
+        data.update(did_something)
         return data
 
     if isinstance(data, dict):
@@ -52,48 +51,103 @@ def attach_additional_data(data, user_id):
     return data
 
 
-class FeedListCreate(generics.GenericAPIView):
-    queryset = Til.objects.all()
-    serializer_class = FeedSerializer
-    pagination_class = IdCursorPagination
-    permission_classes = [permissions.IsAllowAnonymousToGetAnonymous]
-    filter_backends = [
-        IsActiveFilterBackend,
-        IsPublicOrMineFilterBackend,
-        TilSearchingFilterBackend,
-    ]
+class FeedListCreate(APIView):
+    permission_classes = [permissions.IsAuthorOrAllowAnonymousGet]
 
     def get(self, request, *args, **kwargs):
 
-        queryset = self.filter_queryset(self.get_queryset())
+        # Initialize filter and queryset
+        filters = self.build_filter_initial(request)
+        filters.update(self.build_filter_etc(request))
+        queryset = Til.objects.filter(**filters)
 
-        page = self.paginate_queryset(queryset)
+        # Searching
+        q_search = self.build_q_search(request)
+        queryset = queryset.filter(q_search)
+
+        # Pagenation
+        paginator = IdCursorPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
         queryset = page if page is not None else queryset
 
-        serializer = self.get_serializer(queryset, many=True)
+        # Serializing
+        serializer = FeedSerializer(queryset, many=True)
 
-        response_data = attach_additional_data(
+        # Attach additional info (it can't be attached by serializer)
+        response_data = attach_did_something(
             data=serializer.data, user_id=getattr(request.user, "id", None)
         )
 
         if page is not None:
-            response = self.get_paginated_response(response_data)
+            response = paginator.get_paginated_response(response_data)
         else:
             response = Response(response_data, status=status.HTTP_200_OK)
 
         return response
 
+    @staticmethod
+    def build_filter_initial(request):
+        filter_initial = dict(is_active=True, is_public=True)
+        if request.query_params.get("with_my_private", False):
+            user_id = getattr(request.user, "id", None)
+            filter_initial.update(dict(user__id=user_id))
+        return filter_initial
+
+    @staticmethod
+    def build_filter_etc(request):
+        filter_etc = dict()
+        for key, val in request.query_params.items():
+            if key == "tags":
+                filter_etc["tags__in"] = self.__get_tags(val)
+            elif key == "job_title":
+                filter_etc["user__job_title"] = val
+            elif hasattr(model, key):
+                filter_etc[key] = val
+        return filter_etc
+
+    @staticmethod
+    def __get_tags(tags):
+        instances = []
+        for name in parse_tag_input(tags):
+            try:
+                instances.append(Tag.objects.get(name=name))
+            except Tag.DoesNotExist:
+                pass
+        return instances
+
+    @staticmethod
+    def build_q_search(request):
+        # Old way searching This code region will be depreciated
+        content = request.query_params.get("content", False)
+        if content:
+            search_query = Q(content__contains=content) | Q(title__contains=content)
+        # new way searching This code region will be remained
+        search = request.query_params.get("search", False)
+        if search:
+            search_query = Q(content__contains=search) | Q(title__contains=search)
+        else:
+            search_query = Q()
+        return search_query
+
     def post(self, request, *args, **kwargs):
         # Save
-        data = extract_data_with_user_id_form(request)
+        data = self.extract_data_with_user_id_from(request)
         data["tags"] = parse_tag_and_create_if_new(data.get("tags", ""))
         serializer = TilSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
         # Response
         instance = serializer.Meta.model.objects.get(id=serializer.data["id"])
-        response_serializer = self.get_serializer(instance)
+        response_serializer = FeedSerializer(instance)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @staticmethod
+    def extract_data_with_user_id_from(request):
+        data = dict(request.data.items())
+        if "user" not in data.keys() and hasattr(request.user, "id"):
+            data["user"] = getattr(request.user, "id", None)
+        return data
 
 
 class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -106,7 +160,7 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = FeedSerializer(instance)
-        response_data = attach_additional_data(
+        response_data = attach_did_something(
             data=serializer.data, user_id=getattr(request.user, "id", None)
         )
         return Response(response_data, status=status.HTTP_200_OK)
@@ -144,6 +198,7 @@ class TilRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class TilBookmark(TilRelationAPIView):
     queryset = Bookmark.objects.all()
     serializer_class = BookmarkSerializer
+    serializer_class_userinfo = BookmarkUserInfoSerializer
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsMyself]
     filter_backends = [IsTilRealtedFilterBackend]
@@ -152,6 +207,7 @@ class TilBookmark(TilRelationAPIView):
 class TilClap(TilRelationAPIView):
     queryset = Clap.objects.all()
     serializer_class = ClapSerializer
+    serializer_class_userinfo = ClapUserInfoSerializer
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [IsTilRealtedFilterBackend]

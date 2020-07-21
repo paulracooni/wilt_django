@@ -14,7 +14,7 @@ from rest_framework import authentication, exceptions
 from wilt_backend import exceptions
 from wilt_backend.models import WiltUser
 
-from wilt_api.settings import DEBUG, DEVELOP_CODE
+from wilt_api.settings import DEBUG, DEVELOP_CODE, ADMIN_USER_ID
 
 UserModel = get_user_model()
 credentials = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
@@ -90,8 +90,7 @@ class AuthenticationMixin:
         # For DEVELOPER
         token = self.get_auth_token(request)
         if DEBUG and token == DEVELOP_CODE:
-            user = AnonymousUser()
-            setattr(user, "is_superuser", True)
+            user = WiltUser.objects.get(id=ADMIN_USER_ID)
             return user
 
         # For Wilt User and Anonymous User

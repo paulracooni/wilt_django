@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
 
-class TilRelationAPIView(mixins.ListModelMixin, generics.GenericAPIView):
+class TilRelationAPIView(generics.GenericAPIView):
     def get(self, request, id, format=None):
         return_count = bool(request.query_params.get("return_count", 0))
         if return_count:
@@ -18,6 +18,17 @@ class TilRelationAPIView(mixins.ListModelMixin, generics.GenericAPIView):
 
         self.til_id = id  # Initialize for IsTilRealtedFilterBackend
         return self.list(request)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class_userinfo(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class_userinfo(queryset, many=True)
+        return Response(serializer.data)
 
     def post(self, request, id, format=None):
         data = self.create(til=id, user=request.user.id)

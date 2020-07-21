@@ -10,7 +10,9 @@ __all__ = (
     "FeedSerializer",
     "MiniWiltUserSerilizer",
     "ClapSerializer",
+    "ClapUserInfoSerializer",
     "BookmarkSerializer",
+    "BookmarkUserInfoSerializer",
 )
 
 # Global read only field
@@ -61,6 +63,28 @@ class WiltUserSerializer(serializers.ModelSerializer):
         return UserFollow.objects.filter(following_user_id=obj.id).count()
 
 
+class MiniWiltUserSerilizer(WiltUserSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "display_name",
+            "picture",
+            "description",
+            "company_name",
+            "job_title",
+            "career_year",
+        )
+        model = WiltUser
+
+
+class MixInUserInfo:
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
+
+
 class UserFollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFollow
@@ -97,32 +121,6 @@ class TilSerializer(serializers.ModelSerializer):
         return Clap.objects.filter(til=obj).count()
 
 
-class FeedSerializer(TilSerializer):
-    user = serializers.SerializerMethodField()
-
-    def get_user(self, obj):
-        user = WiltUser.objects.get(id=obj.user.id)
-        return MiniWiltUserSerilizer(user).data
-
-
-class MiniWiltUserSerilizer(WiltUserSerializer):
-    class Meta:
-        fields = (
-            "id",
-            "display_name",
-            "picture",
-            "description",
-            "company_name",
-            "job_title",
-            "career_year",
-            "n_following",
-            "n_followers",
-            "n_bookmark",
-            "n_clap",
-        )
-        model = WiltUser
-
-
 class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
@@ -135,3 +133,15 @@ class BookmarkSerializer(serializers.ModelSerializer):
         model = Bookmark
         fields = "__all__"
         read_only_fields = GLOBAL_ROF
+
+
+class FeedSerializer(MixInUserInfo, TilSerializer):
+    pass
+
+
+class ClapUserInfoSerializer(MixInUserInfo, ClapSerializer):
+    pass
+
+
+class BookmarkUserInfoSerializer(MixInUserInfo, BookmarkSerializer):
+    pass

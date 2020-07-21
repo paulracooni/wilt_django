@@ -113,12 +113,6 @@ class IdCursorPagination(pagination.CursorPagination):
 # ////////////////////////////////////////////
 
 
-def extract_data_with_user_id_form(request):
-    data = dict(request.data.items())
-    data["user"] = request.user.id
-    return data
-
-
 def get_success_headers(data):
     try:
         return {"Location": str(data[api_settings.URL_FIELD_NAME])}
