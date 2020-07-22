@@ -117,6 +117,14 @@ class SearchTils(APIView):
         return instances
 
 
+class HotTagRetrive(APIView):
+    def get(self, request, format=None):
+        queryset = LogSearch.objects.all()
+        for q in queryset:
+            print(q)
+        return Response(status=status.HTTP_200_OK)
+
+
 # class SearchUsers(APIView):
 
 #     permission_classes = [permissions.IsAuthenticated]

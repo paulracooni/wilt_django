@@ -30,6 +30,8 @@ urlpatterns = [
     path("users/<str:user_id>/totalcount/", view_users.UserTotalCount.as_view()),
     # Search related endpoints
     path("search/tils/", view_search.SearchTils.as_view()),
+    path("search/hot-tags/", view_search.HotTagRetrive.as_view()),
+    # path("search/hot-keyword/", view_search.SearchTils.as_view()),
     # path("search/users")
     # Policy retrive endpoints
     path("policy/", view_policy.PolicyRetrieve.as_view()),

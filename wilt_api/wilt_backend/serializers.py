@@ -208,5 +208,5 @@ class LogSearchSerializer(serializers.ModelSerializer):
         model = LogSearch
         fields = "__all__"
 
-    def create(self, validated_data):
-        return self.Meta.model(**validated_data)
+    # def create(self, validated_data):
+    #     return self.Meta.model(**validated_data)
