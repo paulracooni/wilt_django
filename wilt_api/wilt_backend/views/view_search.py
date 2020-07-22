@@ -15,10 +15,6 @@ from wilt_backend.views.helpers import *
 from functools import reduce
 
 
-def parse_params(query_params):
-    return dict([(key, val) for key, val in query_params.items()])
-
-
 class SearchTils(APIView):
     permission_classes = [permissions.IsAuthenticated]
     possible_params = (
