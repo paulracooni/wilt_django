@@ -31,7 +31,7 @@ urlpatterns = [
     # Search related endpoints
     path("search/tils/", view_search.SearchTils.as_view()),
     path("search/hot-tags/", view_search.HotTagRetrive.as_view()),
-    # path("search/hot-keyword/", view_search.SearchTils.as_view()),
+    path("search/hot-keyword/", view_search.HotKeywordRetrive.as_view()),
     # path("search/users")
     # Policy retrive endpoints
     path("policy/", view_policy.PolicyRetrieve.as_view()),

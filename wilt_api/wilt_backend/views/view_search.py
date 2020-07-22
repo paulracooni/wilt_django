@@ -1,4 +1,5 @@
-from django.db.models import Q
+from django.db.models import Q, Count
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -119,10 +120,42 @@ class SearchTils(APIView):
 
 class HotTagRetrive(APIView):
     def get(self, request, format=None):
-        queryset = LogSearch.objects.filter(search_entity="tag")
-        for q in queryset:
-            print(q)
-        return Response(status=status.HTTP_200_OK)
+        try:
+            n = int(request.query_params.get("n", 10))
+        except ValueError:
+            detail = "n must be inteager."
+            return Response(dict(detail=detail), status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = (
+            LogSearch.objects.filter(search_type="tag", search_entity="til")
+            .values_list("keyword")
+            .annotate(count=Count("keyword"))
+            .order_by("-count")[:n]
+        )
+
+        data = dict(hot_tags=[dict(tag=q[0], count=q[1]) for q in queryset])
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HotKeywordRetrive(APIView):
+    def get(self, request, format=None):
+        try:
+            n = int(request.query_params.get("n", 10))
+        except ValueError:
+            detail = "n must be inteager."
+            return Response(dict(detail=detail), status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = (
+            LogSearch.objects.filter(
+                search_type__in=["context", "title", "content"], search_entity="til"
+            )
+            .values_list("keyword")
+            .annotate(count=Count("keyword"))
+            .order_by("-count")[:n]
+        )
+
+        data = dict(hot_tags=[dict(tag=q[0], count=q[1]) for q in queryset])
+        return Response(data, status=status.HTTP_200_OK)
 
 
 # class SearchUsers(APIView):
