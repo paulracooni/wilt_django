@@ -199,7 +199,7 @@ class UserBookmark(APIView):
 
 
 # User가 TIL에 사용하였던 태그들을 불러오는 view
-class UserTag(MixinTilQuery, APIView):
+class UserTag(MixInTilQuery, APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, id, format=None):
@@ -232,7 +232,7 @@ class UserTag(MixinTilQuery, APIView):
 
 # 유저의 TIL을 가져오는 view
 # 페이지 네이션 적용 필
-class UserTils(MixinTilQuery, APIView):
+class UserTils(MixInTilQuery, APIView):
     def get(self, request, id, format=None):
 
         active_user = get_active_user_or_false(id=id)
@@ -303,9 +303,10 @@ class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
     # filter_backends
 
 
-class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
+class UserFollowing(MixInFollowList, generics.GenericAPIView):
     queryset = UserFollow.objects.all()
     serializer_class = UserFollowSerializer
+    serializer_class_user_info = UserFollowingSerializer
     pagination_class = IdCursorPagination
     # permission_classes
     filter_backends = [IsFollowingFilterBackend]
@@ -348,9 +349,10 @@ class UserFollowing(mixins.ListModelMixin, generics.GenericAPIView):
         return instance
 
 
-class UserFollowers(mixins.ListModelMixin, generics.GenericAPIView):
+class UserFollowers(MixInFollowList, generics.GenericAPIView):
     queryset = UserFollow.objects.all()
     serializer_class = UserFollowSerializer
+    serializer_class_user_info = UserFollowerSerializer
     pagination_class = IdCursorPagination
     filter_backends = [IsFollowersFilterBackend]
 

@@ -13,7 +13,20 @@ from wilt_backend.utils import *
 from wilt_backend.models import *
 
 
-class MixinTilQuery:
+class MixInFollowList:
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class_user_info(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class_user_info(queryset, many=True)
+        return Response(serializer.data)
+
+
+class MixInTilQuery:
     def build_filter_initial(self):
         filter_initial = dict(is_active=True, is_public=True)
         if self.request.query_params.get("with_my_private", False):

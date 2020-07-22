@@ -51,7 +51,7 @@ def attach_did_something(data, user_id):
     return data
 
 
-class FeedListCreate(MixinTilQuery, APIView):
+class FeedListCreate(MixInTilQuery, APIView):
     permission_classes = [permissions.IsAuthorOrAllowAnonymousGet]
 
     def get(self, request, *args, **kwargs):

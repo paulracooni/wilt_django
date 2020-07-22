@@ -4,7 +4,6 @@ from wilt_backend.models import WiltUser, UserFollow, Til, Bookmark, Clap, Tag
 # All serializers defined as bellow
 __all__ = (
     "WiltUserSerializer",
-    "UserFollowSerializer",
     "TagSerializer",
     "TilSerializer",
     "FeedSerializer",
@@ -13,6 +12,9 @@ __all__ = (
     "ClapUserInfoSerializer",
     "BookmarkSerializer",
     "BookmarkUserInfoSerializer",
+    "UserFollowSerializer",
+    "UserFollowerSerializer",
+    "UserFollowingSerializer",
 )
 
 # Global read only field
@@ -75,12 +77,6 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
             "career_year",
         )
         model = WiltUser
-
-
-class UserFollowSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserFollow
-        fields = "__all__"
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -148,4 +144,42 @@ class BookmarkUserInfoSerializer(BookmarkSerializer):
 
     def get_user(self, obj):
         user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
+
+
+class UserFollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFollow
+        fields = "__all__"
+
+
+class UserFollowerSerializer(serializers.ModelSerializer):
+    """
+    나를 팔로우 한 유저
+    """
+
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserFollow
+        fields = "__all__"
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user_id.id)
+        return MiniWiltUserSerilizer(user).data
+
+
+class UserFollowingSerializer(serializers.ModelSerializer):
+    """
+    내가 팔로우 하고 있는 유저
+    """
+
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserFollow
+        fields = "__all__"
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.following_user_id.id)
         return MiniWiltUserSerilizer(user).data
