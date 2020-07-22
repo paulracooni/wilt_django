@@ -233,6 +233,8 @@ class UserTag(MixInTilQuery, APIView):
 # 유저의 TIL을 가져오는 view
 # 페이지 네이션 적용 필
 class UserTils(MixInTilQuery, APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, user_id, format=None):
 
         active_user = get_active_user_or_false(id=user_id)
@@ -252,10 +254,6 @@ class UserTils(MixInTilQuery, APIView):
             page = paginator.paginate_queryset(queryset, request, view=self)
             queryset = page if page is not None else queryset
 
-            # result["user_category_list"] = user_category_list
-            # result["user_til_list"] = user_til
-            # response = Response(result, status=status.HTTP_200_OK)
-
             # Serializing
             serializer = FeedSerializer(queryset, many=True)
             response = paginator.get_paginated_response(serializer.data)
@@ -265,8 +263,29 @@ class UserTils(MixInTilQuery, APIView):
         return response
 
 
+class UserCategories(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id, format=None):
+
+        active_user = get_active_user_or_false(id=user_id)
+        if active_user:
+            query_set = (
+                Til.objects.filter(user=active_user)
+                .values_list("category", flat=True)
+                .distinct()
+            )
+            categories = dict(categories=[category for category in query_set])
+            response = Response(categories, status=status.HTTP_200_OK)
+        else:
+            response = get_invalid_user_response(id=id)
+        return response
+
+
 # 유저의 til 갯수/ 응원 갯수 / 북마크 갯수를 불러오는 view
 class UserTotalCount(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, user_id, format=None):
         result = dict()
         active_user = get_active_user_or_false(id=user_id)

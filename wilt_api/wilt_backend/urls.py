@@ -22,6 +22,7 @@ urlpatterns = [
     path("users/<str:user_id>/", view_users.UserDetail.as_view()),
     path("users/<str:user_id>/claps/", view_users.UserClaps.as_view()),
     path("users/<str:user_id>/bookmarks/", view_users.UserBookmark.as_view()),
+    path("users/<str:user_id>/categories/", view_users.UserCategories.as_view()),
     path("users/<str:user_id>/tags/", view_users.UserTag.as_view()),
     path("users/<str:user_id>/following/", view_users.UserFollowing.as_view()),
     path("users/<str:user_id>/followers/", view_users.UserFollowers.as_view()),
