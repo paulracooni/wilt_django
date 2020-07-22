@@ -17,6 +17,7 @@ __all__ = (
     "UserFollowSerializer",
     "UserFollowerSerializer",
     "UserFollowingSerializer",
+    "LogSearchSerializer",
 )
 
 # Global read only field
@@ -200,3 +201,12 @@ class UserFollowingSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         user = WiltUser.objects.get(id=obj.following_user_id.id)
         return MiniWiltUserSerilizer(user).data
+
+
+class LogSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogSearch
+        fields = "__all__"
+
+    def create(self, validated_data):
+        return self.Meta.model(**validated_data)

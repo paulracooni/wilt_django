@@ -15,6 +15,7 @@ __all__ = (
     "Clap",
     "Bookmark",
     "Comment",
+    "LogSearch",
 )
 
 nullable = dict(null=True, blank=True)
@@ -183,3 +184,18 @@ class Comment(models.Model):
         ordering = ("date_created",)
         verbose_name = _("comment")
         verbose_name_plural = _("comments")
+
+
+class LogSearch(models.Model):
+    id = models.AutoField(_("search id"), primary_key=True)
+    user = models.ForeignKey(WiltUser, on_delete=models.DO_NOTHING)
+    search_entity = models.CharField(_("entity"), max_length=5, null=False)
+    search_type = models.CharField(_("type"), max_length=20, null=False)
+    keyword = models.CharField(_("keyword"), max_length=50, null=False)
+    date_created = models.DateTimeField(_("date created"), **domain_created)
+
+    class Meta:
+        db_table = "log_search"
+        ordering = ("date_created",)
+        verbose_name = _("search log")
+        verbose_name_plural = _("search logs")

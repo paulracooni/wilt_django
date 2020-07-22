@@ -3,6 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from wilt_backend.views import view_tils
 from wilt_backend.views import view_users
+from wilt_backend.views import view_search
 from wilt_policy import views as view_policy
 
 urlpatterns = [
@@ -26,6 +27,9 @@ urlpatterns = [
     path("users/<str:user_id>/followers/", view_users.UserFollowers.as_view()),
     path("users/<str:user_id>/tils/", view_users.UserTils.as_view()),
     path("users/<str:user_id>/totalcount/", view_users.UserTotalCount.as_view()),
+    # Search related endpoints
+    path("search/tils/", view_search.SearchTils.as_view()),
+    # path("search/users")
     # Policy retrive endpoints
     path("policy/", view_policy.PolicyRetrieve.as_view()),
     path("s3auth/", view_policy.S3AuthInfoRetrieve.as_view()),
