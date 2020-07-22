@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from wilt_backend.models import WiltUser, UserFollow, Til, Bookmark, Clap, Tag
+from wilt_backend.models import *
 
 # All serializers defined as bellow
 __all__ = (
@@ -12,6 +12,8 @@ __all__ = (
     "ClapUserInfoSerializer",
     "BookmarkSerializer",
     "BookmarkUserInfoSerializer",
+    "CommentSerializer",
+    "CommentUserInfoSerializer",
     "UserFollowSerializer",
     "UserFollowerSerializer",
     "UserFollowingSerializer",
@@ -123,6 +125,13 @@ class BookmarkSerializer(serializers.ModelSerializer):
         read_only_fields = GLOBAL_ROF
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+        read_only_fields = GLOBAL_ROF
+
+
 class FeedSerializer(TilSerializer):
     user = serializers.SerializerMethodField()
 
@@ -140,6 +149,14 @@ class ClapUserInfoSerializer(ClapSerializer):
 
 
 class BookmarkUserInfoSerializer(BookmarkSerializer):
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        user = WiltUser.objects.get(id=obj.user.id)
+        return MiniWiltUserSerilizer(user).data
+
+
+class CommentUserInfoSerializer(CommentSerializer):
     user = serializers.SerializerMethodField()
 
     def get_user(self, obj):

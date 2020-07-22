@@ -167,3 +167,77 @@ class TilClap(TilRelationAPIView):
     pagination_class = IdCursorPagination
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [IsTilRealtedFilterBackend]
+
+
+class TilComment(TilRelationAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    serializer_class_userinfo = CommentUserInfoSerializer
+    pagination_class = IdCursorPagination
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [IsTilRealtedFilterBackend, IsActiveFilterBackend]
+
+    def delete(self, request, til_id, format=None):
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class TilCommentUpdateDestroy(APIView):
+    permission_classes = [permissions.IsMyself]
+    NO_UPDATE_FIELD = ("is_active",)
+
+    def patch(self, request, til_id, comment_id, format=None):
+        comment = self.retrive_comment_or_false(comment_id)
+        if comment:
+            response = self.update(comment, request.data, partial=True)
+        else:
+            response = self.get_fail_response(til_id, comment_id)
+        return response
+
+    def delete(self, request, til_id, comment_id, format=None):
+        comment = self.retrive_comment_or_false(comment_id)
+        if comment:
+            serializer = self.__update(comment, dict(is_active=False), partial=True)
+            detail = f"Comment({comment_id}) is deleted."
+            response = Response(dict(detail=detail), status=status.HTTP_204_NO_CONTENT)
+        else:
+            response = self.get_fail_response(til_id, comment_id)
+        return response
+
+    def update(self, comment, data, partial=True):
+        # Update comment
+        fields = self.__filter_fields(data)
+        serializer = self.__update(comment, fields, partial=partial)
+
+        # Retrive comment with user info
+        updated_commnet = self.retrive_comment_or_false(comment.id)
+        serializer = CommentUserInfoSerializer(updated_commnet)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @staticmethod
+    def __update(comment, data, partial=False):
+        serializer = CommentSerializer(comment, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return serializer
+
+    @staticmethod
+    def retrive_comment_or_false(comment_id):
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except exceptions.ObjectDoesNotExist as ex:
+            return False
+        return comment
+
+    @staticmethod
+    def get_fail_response(til_id, comment_id):
+        detail = dict(detail=f"bad request til:{til_id}, comment:{comment_id}")
+        return Response(detail, status=status.HTTP_400_BAD_REQUEST)
+
+    @classmethod
+    def __filter_fields(cls, fields):
+        fields = {
+            field_name: field_value
+            for field_name, field_value in fields.items()
+            if field_name not in cls.NO_UPDATE_FIELD
+        }
+        return fields

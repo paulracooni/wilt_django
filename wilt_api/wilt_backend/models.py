@@ -7,11 +7,22 @@ from django.utils.translation import gettext_lazy as _
 from wilt_backend.managers import UserManager
 
 # Models defined as bellow.
-__all__ = ("WiltUser", "UserFollow", "Tag", "Til", "Clap", "Bookmark")
+__all__ = (
+    "WiltUser",
+    "UserFollow",
+    "Tag",
+    "Til",
+    "Clap",
+    "Bookmark",
+    "Comment",
+)
 
 nullable = dict(null=True, blank=True)
 domain_id = dict(max_length=28, primary_key=True, db_index=True, unique=True)
 domain_name = dict(max_length=20, unique=True, null=True, blank=True)
+domain_parent = dict(null=True, blank=True, on_delete=models.CASCADE)
+domain_created = dict(default=timezone.now, editable=False)
+
 
 # ////////////////////////////////////////////////////////////
 JOBTITLE_CHOICES = [
@@ -78,7 +89,7 @@ class UserFollow(models.Model):
     following_user_id = models.ForeignKey(
         WiltUser, related_name="follower", on_delete=models.CASCADE
     )
-    date_created = models.DateTimeField(auto_now_add=True, db_index=True)
+    date_created = models.DateTimeField(_("date created"), **domain_created)
 
     class Meta:
         db_table = "user_follow"
@@ -121,9 +132,7 @@ class Til(models.Model):
 
     tags = models.ManyToManyField(Tag, related_name="til_tags")
 
-    date_created = models.DateTimeField(
-        _("date created"), default=timezone.now, editable=False
-    )
+    date_created = models.DateTimeField(_("date created"), **domain_created)
 
     # objects = TilManager()
 
@@ -137,9 +146,7 @@ class Clap(models.Model):
     id = models.AutoField(_("clap id"), primary_key=True)
     user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
     til = models.ForeignKey(Til, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(
-        _("date created"), default=timezone.now, editable=False
-    )
+    date_created = models.DateTimeField(_("date created"), **domain_created)
 
     class Meta:
         db_table = "clap"
@@ -152,12 +159,27 @@ class Bookmark(models.Model):
     id = models.AutoField(_("bookmark id"), primary_key=True)
     user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
     til = models.ForeignKey(Til, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(
-        _("date created"), default=timezone.now, editable=False
-    )
+    date_created = models.DateTimeField(_("date created"), **domain_created)
 
     class Meta:
         db_table = "bookmark"
         verbose_name = _("bookmark")
         verbose_name_plural = _("bookmarks")
         unique_together = (("user", "til",),)
+
+
+class Comment(models.Model):
+
+    id = models.AutoField(_("comment id"), primary_key=True)
+    user = models.ForeignKey(WiltUser, on_delete=models.CASCADE)
+    til = models.ForeignKey(Til, on_delete=models.CASCADE)
+    content = models.TextField(_("content"))
+    is_active = models.BooleanField(_("is active"), default=True,)
+    date_created = models.DateTimeField(_("date created"), **domain_created)
+    parent = models.ForeignKey("self", related_name="replies", **domain_parent)
+
+    class Meta:
+        db_table = "comment"
+        ordering = ("date_created",)
+        verbose_name = _("comment")
+        verbose_name_plural = _("comments")

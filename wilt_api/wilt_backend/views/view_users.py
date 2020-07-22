@@ -46,8 +46,8 @@ class UserDetail(APIView):
     permission_classes = [permissions.IsMyself]
     NO_UPDATE_FIELD = ("id", "email", "is_staff", "is_superuser")
 
-    def get(self, request, id, format=None):
-        active_user = get_active_user_or_false(id=id)
+    def get(self, request, user_id, format=None):
+        active_user = get_active_user_or_false(id=user_id)
         if active_user:
             serializer = WiltUserSerializer(active_user)
             response = Response(serializer.data, status=status.HTTP_200_OK)
@@ -56,30 +56,30 @@ class UserDetail(APIView):
             response = Response(dict(detail=detail), status=status.HTTP_204_NO_CONTENT)
         return response
 
-    def put(self, request, id, format=None):
-        user = get_user_or_false(id=id)
+    def put(self, request, user_id, format=None):
+        user = get_user_or_false(id=user_id)
         if user:
             response = self.update(user, request.data, partial=False)
         else:
-            response = self.get_invalid_user(id)
+            response = self.get_invalid_user(user_id)
         return response
 
-    def patch(self, request, id, format=None):
-        user = get_user_or_false(id=id)
+    def patch(self, request, user_id, format=None):
+        user = get_user_or_false(id=user_id)
         if user:
             response = self.update(user, request.data, partial=True)
         else:
-            response = get_invalid_user_response(id)
+            response = get_invalid_user_response(user_id)
         return response
 
-    def delete(self, request, id, format=None):
-        user = get_user_or_false(id=id)
+    def delete(self, request, user_id, format=None):
+        user = get_user_or_false(id=user_id)
         if user:
             serializer = self.__update(user, dict(is_active=False), partial=True)
-            detail = f"User({id}) is deleted."
+            detail = f"User({user_id}) is deleted."
             response = Response(dict(detail=detail), status=status.HTTP_204_NO_CONTENT)
         else:
-            response = get_invalid_user_response(id)
+            response = get_invalid_user_response(user_id)
         return response
 
     def update(self, user, data, partial=True):
@@ -154,9 +154,9 @@ class UserCheck(APIView):
 class UserClaps(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
 
-        active_user = get_active_user_or_false(id=id)
+        active_user = get_active_user_or_false(id=user_id)
         if active_user:
             # Query data
             queryset = Clap.objects.select_related("til").filter(user=active_user)
@@ -170,7 +170,7 @@ class UserClaps(APIView):
             # Response data
             response = paginator.get_paginated_response(serializer.data)
         else:
-            response = get_invalid_user_response(id=id)
+            response = get_invalid_user_response(id=user_id)
         return response
 
 
@@ -178,9 +178,9 @@ class UserClaps(APIView):
 class UserBookmark(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
 
-        active_user = get_active_user_or_false(id=id)
+        active_user = get_active_user_or_false(id=user_id)
         if active_user:
             # Query data
             queryset = Bookmark.objects.select_related("til").filter(user=active_user)
@@ -194,7 +194,7 @@ class UserBookmark(APIView):
             # Response data
             response = paginator.get_paginated_response(serializer.data)
         else:
-            response = get_invalid_user_response(id=id)
+            response = get_invalid_user_response(id=user_id)
         return response
 
 
@@ -202,14 +202,14 @@ class UserBookmark(APIView):
 class UserTag(MixInTilQuery, APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
 
-        active_user = get_active_user_or_false(id=id)
+        active_user = get_active_user_or_false(id=user_id)
         if active_user:
             tags = request.GET.get("tags", "")
             response = self.__count_tags_by(active_user)
         else:
-            response = get_invalid_user_response(id=id)
+            response = get_invalid_user_response(id=user_id)
         return response
 
     def __count_tags_by(self, active_user):
@@ -233,9 +233,9 @@ class UserTag(MixInTilQuery, APIView):
 # 유저의 TIL을 가져오는 view
 # 페이지 네이션 적용 필
 class UserTils(MixInTilQuery, APIView):
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
 
-        active_user = get_active_user_or_false(id=id)
+        active_user = get_active_user_or_false(id=user_id)
         if active_user:
 
             # Initialize filter and queryset
@@ -267,9 +267,9 @@ class UserTils(MixInTilQuery, APIView):
 
 # 유저의 til 갯수/ 응원 갯수 / 북마크 갯수를 불러오는 view
 class UserTotalCount(APIView):
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
         result = dict()
-        active_user = get_active_user_or_false(id=id)
+        active_user = get_active_user_or_false(id=user_id)
 
         if active_user:
             # 유저의 til 갯수
@@ -287,7 +287,7 @@ class UserTotalCount(APIView):
 
             response = Response(result, status=status.HTTP_200_OK)
         else:
-            response = get_invalid_user_response(id=id)
+            response = get_invalid_user_response(id=user_id)
 
         return response
 
@@ -311,15 +311,17 @@ class UserFollowing(MixInFollowList, generics.GenericAPIView):
     # permission_classes
     filter_backends = [IsFollowingFilterBackend]
 
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
         return_count = bool(request.query_params.get("return_count", 0))
         if return_count:
             count = self.get_queryset().filter(user_id=request.user.id).count()
             return Response(dict(count=count), status=status.HTTP_200_OK)
         return self.list(request)
 
-    def post(self, request, id, format=None):
-        data = self.create(data=dict(user_id=request.user.id, following_user_id=id))
+    def post(self, request, user_id, format=None):
+        data = self.create(
+            data=dict(user_id=request.user.id, following_user_id=user_id)
+        )
         return Response(data, status=status.HTTP_201_CREATED)
 
     def create(self, data):
@@ -328,16 +330,16 @@ class UserFollowing(MixInFollowList, generics.GenericAPIView):
         serializer.save()
         return serializer.data
 
-    def delete(self, request, id, format=None):
+    def delete(self, request, user_id, format=None):
         instance = self.get_instance_or_false(
-            user_id=request.user.id, following_user_id=id
+            user_id=request.user.id, following_user_id=user_id
         )
         if instance:
-            detail = f" user_id: {request.user.id}, following_user_id:{id} is not true anymore!"
+            detail = f" user_id: {request.user.id}, following_user_id:{user_id} is not true anymore!"
             instance.delete()
             response = Response(dict(detail=detail), status=status.HTTP_204_NO_CONTENT)
         else:
-            detail = f"ObjectDoesNotExist, user_id: {request.user.id}, following_user_id:{id}"
+            detail = f"ObjectDoesNotExist, user_id: {request.user.id}, following_user_id:{user_id}"
             response = Response(dict(detail=detail), status=status.HTTP_404_NOT_FOUND)
         return response
 
@@ -356,10 +358,10 @@ class UserFollowers(MixInFollowList, generics.GenericAPIView):
     pagination_class = IdCursorPagination
     filter_backends = [IsFollowersFilterBackend]
 
-    def get(self, request, id, format=None):
+    def get(self, request, user_id, format=None):
         return_count = bool(request.query_params.get("return_count", 0))
         if return_count:
-            count = self.get_queryset().filter(user_id=id).count()
+            count = self.get_queryset().filter(user_id=user_id).count()
             return Response(dict(count=count), status=status.HTTP_200_OK)
-        self.follower_id = id
+        self.follower_id = user_id
         return self.list(request)

@@ -71,13 +71,12 @@ class MixInTilQuery:
 
 
 class TilRelationAPIView(generics.GenericAPIView):
-    def get(self, request, id, format=None):
+    def get(self, request, til_id, format=None):
         return_count = bool(request.query_params.get("return_count", 0))
         if return_count:
-            count = self.get_queryset().filter(til=id).count()
+            count = self.get_queryset().filter(til=til_id).count()
             return Response(dict(count=count), status=status.HTTP_200_OK)
-
-        self.til_id = id  # Initialize for IsTilRealtedFilterBackend
+        self.til_id = til_id  # Initialize for IsTilRealtedFilterBackend
         return self.list(request)
 
     def list(self, request, *args, **kwargs):
@@ -91,18 +90,20 @@ class TilRelationAPIView(generics.GenericAPIView):
         serializer = self.serializer_class_userinfo(queryset, many=True)
         return Response(serializer.data)
 
-    def post(self, request, id, format=None):
-        data = self.create(til=id, user=request.user.id)
+    def post(self, request, til_id, format=None):
+        extra_fields = dict([(key, val) for key, val in request.data.items()])
+        data = self.create(til=til_id, user=request.user.id, **extra_fields)
         headers = self.get_success_headers(data)
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def delete(self, request, id, format=None):
-        instance = self.get_instance_or_404(til=id, user=request.user.id)
+    def delete(self, request, til_id, format=None):
+        instance = self.get_instance_or_404(til=til_id, user=request.user.id)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def create(self, til, user):
-        serializer = self.get_serializer(data=dict(til=til, user=user))
+    def create(self, til, user, **extra_fields):
+        data = dict(til=til, user=user, **extra_fields)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return serializer.data
