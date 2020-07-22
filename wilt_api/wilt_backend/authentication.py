@@ -82,13 +82,15 @@ class AuthenticationMixin:
 
     def authenticate(self, request):
 
+        # Get Token
+        token = self.get_auth_token(request)
+
         # For Staff User on Admin page
         user = get_user(request)
         if user and user.is_staff:
             return user
 
         # For DEVELOPER
-        token = self.get_auth_token(request)
         if DEBUG and token == DEVELOP_CODE:
             user = WiltUser.objects.get(id=ADMIN_USER_ID)
             return user

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import Http404
 from django.core import exceptions
 
@@ -7,6 +8,53 @@ from rest_framework import generics
 
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+
+from wilt_backend.utils import *
+from wilt_backend.models import *
+
+
+class MixinTilQuery:
+    def build_filter_initial(self):
+        filter_initial = dict(is_active=True, is_public=True)
+        if self.request.query_params.get("with_my_private", False):
+            user_id = getattr(self.request.user, "id", None)
+            filter_initial.update(dict(user__id=user_id))
+        return filter_initial
+
+    def build_filter_etc(self):
+        filter_etc = dict()
+        for key, val in self.request.query_params.items():
+
+            if key == "tags":
+                filter_etc["tags__in"] = self.__get_tags(val)
+            elif key == "job_title":
+                filter_etc["user__job_title"] = val
+            elif hasattr(Til, key):
+                filter_etc[key] = val
+        return filter_etc
+
+    @staticmethod
+    def __get_tags(tags):
+        instances = []
+        for name in parse_tag_input(tags):
+            try:
+                instances.append(Tag.objects.get(name=name))
+            except Tag.DoesNotExist:
+                pass
+        return instances
+
+    def build_q_search(self):
+        # Old way searching This code region will be depreciated
+        content = self.request.query_params.get("content", False)
+        if content:
+            search_query = Q(content__contains=content) | Q(title__contains=content)
+        # new way searching This code region will be remained
+        search = self.request.query_params.get("search", False)
+        if search:
+            search_query = Q(content__contains=search) | Q(title__contains=search)
+        else:
+            search_query = Q()
+        return search_query
 
 
 class TilRelationAPIView(generics.GenericAPIView):

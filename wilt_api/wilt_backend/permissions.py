@@ -47,6 +47,14 @@ class IsMyself(permissions.BasePermission):
         return obj.id == request.user.id
 
 
+class IsPrivate(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if is_deveolper(request):
+            return True
+
+        return request.user.id == view.kwargs.get("id", None)
+
+
 class IsAuthor(permissions.BasePermission):
     def has_permission(slef, request, view):
         if is_deveolper(request):

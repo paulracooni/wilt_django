@@ -51,18 +51,18 @@ def attach_did_something(data, user_id):
     return data
 
 
-class FeedListCreate(APIView):
+class FeedListCreate(MixinTilQuery, APIView):
     permission_classes = [permissions.IsAuthorOrAllowAnonymousGet]
 
     def get(self, request, *args, **kwargs):
 
         # Initialize filter and queryset
-        filters = self.build_filter_initial(request)
-        filters.update(self.build_filter_etc(request))
+        filters = self.build_filter_initial()
+        filters.update(self.build_filter_etc())
         queryset = Til.objects.filter(**filters)
 
         # Searching
-        q_search = self.build_q_search(request)
+        q_search = self.build_q_search()
         queryset = queryset.filter(q_search)
 
         # Pagenation
@@ -84,50 +84,6 @@ class FeedListCreate(APIView):
             response = Response(response_data, status=status.HTTP_200_OK)
 
         return response
-
-    @staticmethod
-    def build_filter_initial(request):
-        filter_initial = dict(is_active=True, is_public=True)
-        if request.query_params.get("with_my_private", False):
-            user_id = getattr(request.user, "id", None)
-            filter_initial.update(dict(user__id=user_id))
-        return filter_initial
-
-    @staticmethod
-    def build_filter_etc(request):
-        filter_etc = dict()
-        for key, val in request.query_params.items():
-            if key == "tags":
-                filter_etc["tags__in"] = self.__get_tags(val)
-            elif key == "job_title":
-                filter_etc["user__job_title"] = val
-            elif hasattr(model, key):
-                filter_etc[key] = val
-        return filter_etc
-
-    @staticmethod
-    def __get_tags(tags):
-        instances = []
-        for name in parse_tag_input(tags):
-            try:
-                instances.append(Tag.objects.get(name=name))
-            except Tag.DoesNotExist:
-                pass
-        return instances
-
-    @staticmethod
-    def build_q_search(request):
-        # Old way searching This code region will be depreciated
-        content = request.query_params.get("content", False)
-        if content:
-            search_query = Q(content__contains=content) | Q(title__contains=content)
-        # new way searching This code region will be remained
-        search = request.query_params.get("search", False)
-        if search:
-            search_query = Q(content__contains=search) | Q(title__contains=search)
-        else:
-            search_query = Q()
-        return search_query
 
     def post(self, request, *args, **kwargs):
         # Save

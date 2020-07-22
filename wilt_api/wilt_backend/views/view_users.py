@@ -1,4 +1,4 @@
-from django.db.models import Subquery, OuterRef
+from django.db.models import Count, Sum
 
 from rest_framework import status, mixins, generics, pagination
 
@@ -152,20 +152,23 @@ class UserCheck(APIView):
 
 # User가 clap한 Til 목록을 불러오는 view
 class UserClaps(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, id, format=None):
+
         active_user = get_active_user_or_false(id=id)
         if active_user:
-            queryset_clap = Clap.objects.select_related("til").filter(user=active_user)
-            queryset_til = Til.objects.filter(
-                id__in=[clap.til.id for clap in queryset_clap]
-            )
+            # Query data
+            queryset = Clap.objects.select_related("til").filter(user=active_user)
+            queryset = Til.objects.filter(id__in=[query.til.id for query in queryset])
 
-            serializer = FeedSerializer(queryset_til, many=True)
-            # user_clap_list = []
-            # for clap in queryset:
-            #     tils = FeedSerializer(tils)
-            #     user_clap_list.append(til.data)
-            response = Response(serializer.data, status=status.HTTP_200_OK)
+            # Pagenation
+            paginator = IdCursorPagination()
+            queryset = paginator.paginate_queryset(queryset, request, view=self)
+            serializer = FeedSerializer(queryset, many=True)
+
+            # Response data
+            response = paginator.get_paginated_response(serializer.data)
         else:
             response = get_invalid_user_response(id=id)
         return response
@@ -173,90 +176,89 @@ class UserClaps(APIView):
 
 # User가 북마크한 Til 목록을 불러오는 view
 class UserBookmark(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, id, format=None):
 
         active_user = get_active_user_or_false(id=id)
         if active_user:
+            # Query data
             queryset = Bookmark.objects.select_related("til").filter(user=active_user)
-            user_bookmark_list = []
-            for bookmark in queryset:
-                til = FeedSerializer(bookmark.til)
-                user_bookmark_list.append(til.data)
-            response = Response(user_bookmark_list, status=status.HTTP_200_OK)
+            queryset = Til.objects.filter(id__in=[query.til.id for query in queryset])
+
+            # Pagenation
+            paginator = IdCursorPagination()
+            queryset = paginator.paginate_queryset(queryset, request, view=self)
+            serializer = FeedSerializer(queryset, many=True)
+
+            # Response data
+            response = paginator.get_paginated_response(serializer.data)
         else:
             response = get_invalid_user_response(id=id)
         return response
 
 
 # User가 TIL에 사용하였던 태그들을 불러오는 view
-# User의 태그 중 해당 tag가 들어간 Til 가져오는 view
-class UserTag(APIView):
+class UserTag(MixinTilQuery, APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, id, format=None):
 
         active_user = get_active_user_or_false(id=id)
         if active_user:
-            tag_name = request.GET.get("tag_name", "")
-            tils = Til.objects.filter(user=active_user).prefetch_related("tags")
-            if tag_name:
-                result = self.__til_info_about_tag(tils, tag_name)
-            else:
-                result = self.__count_tags_in_tils(tils)
-            response = Response(result, status=status.HTTP_200_OK)
+            tags = request.GET.get("tags", "")
+            response = self.__count_tags_by(active_user)
         else:
             response = get_invalid_user_response(id=id)
         return response
 
-    @staticmethod
-    def __count_tags_in_tils(tils):
-        tags = dict()
-        for til in tils:
+    def __count_tags_by(self, active_user):
+        # Query data
+        queryset = Til.objects.filter(user=active_user).prefetch_related("tags")
+
+        # Count tags
+        tags_count = dict()
+        for til in queryset:
             for tag in til.tags.all():
-                if tag.name in tags.keys():
-                    tags[tag.name] += 1
+                if tag.name in tags_count.keys():
+                    tags_count[tag.name] += 1
                 else:
-                    tags[tag.name] = 1
-        return tags
+                    tags_count[tag.name] = 1
 
-    @staticmethod
-    def __til_info_about_tag(tils, tag):
-        user_til_list = []
-
-        for til in tils:
-            for tag_name in til.tags.all():
-                if tag_name.name == tag:
-                    user_til_list.append(FeedSerializer(til).data)
-                    break
-
-        return user_til_list
+        # Response data
+        response = Response(tags_count, status=status.HTTP_200_OK)
+        return response
 
 
 # 유저의 TIL을 가져오는 view
 # 페이지 네이션 적용 필
-class UserTils(APIView):
+class UserTils(MixinTilQuery, APIView):
     def get(self, request, id, format=None):
 
-        category = request.GET.get("category", "")
-        result = {}
-        user_category_list = []
-        user_til = []
         active_user = get_active_user_or_false(id=id)
         if active_user:
-            user_til_list = Til.objects.filter(user=active_user)
 
-            for til in user_til_list:
+            # Initialize filter and queryset
+            filters = dict(user=active_user)
+            filters.update(self.build_filter_etc())
+            queryset = Til.objects.filter(**filters)
 
-                if til.category not in user_category_list:
-                    user_category_list.append(til.category)
+            # Searching
+            q_search = self.build_q_search()
+            queryset = queryset.filter(q_search)
 
-                if category:
-                    if til.category != category:
-                        continue
+            # Pagenation
+            paginator = IdCursorPagination()
+            page = paginator.paginate_queryset(queryset, request, view=self)
+            queryset = page if page is not None else queryset
 
-                user_til.append(FeedSerializer(til).data)
+            # result["user_category_list"] = user_category_list
+            # result["user_til_list"] = user_til
+            # response = Response(result, status=status.HTTP_200_OK)
 
-            result["user_category_list"] = user_category_list
-            result["user_til_list"] = user_til
-            response = Response(result, status=status.HTTP_200_OK)
+            # Serializing
+            serializer = FeedSerializer(queryset, many=True)
+            response = paginator.get_paginated_response(serializer.data)
         else:
             response = get_invalid_user_response(id=id)
 
