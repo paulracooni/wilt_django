@@ -101,8 +101,7 @@ class FeedListCreate(MixInTilQuery, APIView):
     @staticmethod
     def extract_data_with_user_id_from(request):
         data = dict(request.data.items())
-        if "user" not in data.keys() and hasattr(request.user, "id"):
-            data["user"] = getattr(request.user, "id", None)
+        data["user"] = getattr(request.user, "id", None)
         return data
 
 
