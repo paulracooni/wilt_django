@@ -15,7 +15,7 @@ from wilt_backend.models import *
 from wilt_backend.generics import *
 from wilt_backend.serializers import *
 from wilt_backend.views.helpers import *
-
+from wilt_backend.views.view_tils import attach_did_something
 from firebase_admin import auth
 
 from ast import literal_eval
@@ -167,8 +167,13 @@ class UserClaps(APIView):
             queryset = paginator.paginate_queryset(queryset, request, view=self)
             serializer = FeedSerializer(queryset, many=True)
 
+            # Attach did somthing data
+            response_data = attach_did_something(
+                data=serializer.data, user_id=active_user.id
+            )
+
             # Response data
-            response = paginator.get_paginated_response(serializer.data)
+            response = paginator.get_paginated_response(response_data)
         else:
             response = get_invalid_user_response(id=user_id)
         return response
@@ -191,8 +196,13 @@ class UserBookmark(APIView):
             queryset = paginator.paginate_queryset(queryset, request, view=self)
             serializer = FeedSerializer(queryset, many=True)
 
+            # Attach did somthing data
+            response_data = attach_did_something(
+                data=serializer.data, user_id=active_user.id
+            )
+
             # Response data
-            response = paginator.get_paginated_response(serializer.data)
+            response = paginator.get_paginated_response(response_data)
         else:
             response = get_invalid_user_response(id=user_id)
         return response
