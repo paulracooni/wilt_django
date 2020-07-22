@@ -119,7 +119,7 @@ class SearchTils(APIView):
 
 class HotTagRetrive(APIView):
     def get(self, request, format=None):
-        queryset = LogSearch.objects.all()
+        queryset = LogSearch.objects.filter(search_entity="tag")
         for q in queryset:
             print(q)
         return Response(status=status.HTTP_200_OK)

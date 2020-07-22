@@ -9,7 +9,7 @@ from wilt_policy import views as view_policy
 urlpatterns = [
     # Til related endpoints
     path("tils/", view_tils.FeedListCreate.as_view()),
-    path("tils/<int:til_id>/", view_tils.TilRetrieveUpdateDestroy.as_view()),
+    path("tils/<int:id>/", view_tils.TilRetrieveUpdateDestroy.as_view()),
     path("tils/<int:til_id>/claps/", view_tils.TilClap.as_view()),
     path("tils/<int:til_id>/comments/", view_tils.TilComment.as_view()),
     path(
