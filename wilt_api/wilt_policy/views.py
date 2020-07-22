@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from wilt_policy.models import *
 from wilt_policy.serializers import *
+from wilt_backend.permissions import *
 
 
 class PolicyRetrieve(APIView):
@@ -16,6 +17,8 @@ class PolicyRetrieve(APIView):
 
 
 class S3AuthInfoRetrieve(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         s3_auth_info = S3AuthInfo.objects.latest("date_created")
         serializer = S3AuthInfoSerializer(s3_auth_info)
