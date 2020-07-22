@@ -11,7 +11,7 @@ from wilt_backend.generics import *
 from wilt_backend.permissions import *
 from wilt_backend.serializers import *
 from wilt_backend.views.helpers import *
-
+from wilt_backend.views.view_tils import attach_did_something
 from functools import reduce
 
 
@@ -36,8 +36,13 @@ class SearchTils(APIView):
             queryset = paginator.paginate_queryset(queryset, self.request, view=self)
             serializer = FeedSerializer(queryset, many=True)
 
+            # Attach additional info (it can't be attached by serializer)
+            response_data = attach_did_something(
+                data=serializer.data, user_id=getattr(request.user, "id", None)
+            )
+
             # Response data
-            response = paginator.get_paginated_response(serializer.data)
+            response = paginator.get_paginated_response(response_data)
         else:
             detail = dict(
                 detail="Bad requst of /search/tils.",
@@ -58,7 +63,7 @@ class SearchTils(APIView):
     def __build_q_all(self):
         # Due to params checked before calling search,
         # param only can be one of possible_params.
-        list_qs = []
+        list_qs = [Q(is_active=True), Q(is_public=True)]
         for key, val in self.request.query_params.items():
             if key == "tags":
                 list_qs.append(self.__build_q_tags_and_save_log(val))
