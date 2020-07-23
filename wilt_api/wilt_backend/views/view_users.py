@@ -263,10 +263,16 @@ class UserTils(MixInTilQuery, APIView):
             paginator = IdCursorPagination()
             page = paginator.paginate_queryset(queryset, request, view=self)
             queryset = page if page is not None else queryset
-
-            # Serializing
             serializer = FeedSerializer(queryset, many=True)
-            response = paginator.get_paginated_response(serializer.data)
+
+            # Attach did somthing data
+            response_data = attach_did_something(
+                data=serializer.data, user_id=active_user.id
+            )
+
+            # Response data
+            response = paginator.get_paginated_response(response_data)
+
         else:
             response = get_invalid_user_response(id=id)
 
