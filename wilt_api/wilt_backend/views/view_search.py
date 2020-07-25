@@ -23,6 +23,7 @@ class SearchTils(APIView):
         "context",
         "title",
         "content",
+        "cursor",
     )
 
     def get(self, request, format=None):
