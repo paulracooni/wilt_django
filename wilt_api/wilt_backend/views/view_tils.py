@@ -35,6 +35,7 @@ def attach_did_something(data, user_id):
     def attach(data, user_id):
         til_id = data.get("id")
         if user_id is not None:
+
             did_something = dict(
                 did_clap=Clap.objects.filter(user=user_id, til=til_id).exists(),
                 did_bookmark=Bookmark.objects.filter(user=user_id, til=til_id).exists(),
