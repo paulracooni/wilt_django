@@ -161,7 +161,7 @@ class UserClaps(APIView):
             # Query data
             queryset = Clap.objects.select_related("til").filter(user=active_user)
             queryset = Til.objects.filter(id__in=[query.til.id for query in queryset])
-            queryset.filter(is_active=True, is_public=True)
+            queryset = queryset.filter(is_active=True, is_public=True)
 
             # Pagenation
             paginator = IdCursorPagination()
@@ -191,7 +191,7 @@ class UserBookmark(APIView):
             # Query data
             queryset = Bookmark.objects.select_related("til").filter(user=active_user)
             queryset = Til.objects.filter(id__in=[query.til.id for query in queryset])
-            queryset.filter(is_active=True, is_public=True)
+            queryset = queryset.filter(is_active=True, is_public=True)
 
             # Pagenation
             paginator = IdCursorPagination()

@@ -59,7 +59,7 @@ class WiltUserSerializer(serializers.ModelSerializer):
         return Bookmark.objects.filter(user=obj.id, **valid_relation).count()
 
     def get_n_clap(self, obj):
-        return Clap.objects.filter(user=obj.id, **valid_relation).count()
+        return Clap.objects.filter(til__user=obj.id, **valid_relation).count()
 
     def get_n_til(self, obj):
         return Til.objects.filter(user=obj.id, is_active=True).count()
