@@ -251,7 +251,9 @@ class UserTils(MixInTilQuery, APIView):
         if active_user:
 
             # Initialize filter and queryset
-            filters = dict(user=active_user)
+            filters = dict(user=active_user, is_active=True)
+            if active_user.id != request.user.id:
+                filters.update(is_public=True)
             filters.update(self.build_filter_etc())
             queryset = Til.objects.filter(**filters)
 
