@@ -1,4 +1,5 @@
 from django.db.models import Count, Sum
+from django.http import QueryDict
 
 from rest_framework import status, mixins, generics, pagination
 
@@ -67,7 +68,15 @@ class UserDetail(APIView):
     def patch(self, request, user_id, format=None):
         user = get_user_or_false(id=user_id)
         if user:
-            response = self.update(user, request.data, partial=True)
+            user_info = request.data.dict()
+
+            if 'career_year' in user_info:
+                if not user_info['career_year']:
+                    user_info['career_year'] = None
+
+            modify_data = QueryDict('', mutable=True)
+            modify_data.update(user_info)
+            response = self.update(user, modify_data, partial=True)
         else:
             response = get_invalid_user_response(user_id)
         return response
