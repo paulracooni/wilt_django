@@ -68,7 +68,10 @@ class UserDetail(APIView):
     def patch(self, request, user_id, format=None):
         user = get_user_or_false(id=user_id)
         if user:
-            user_info = request.data.dict()
+            if type(request.data) is dict:
+                user_info = request.data
+            else:
+                user_info = request.data.dict()
 
             if 'career_year' in user_info:
                 if not user_info['career_year']:
