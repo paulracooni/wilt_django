@@ -81,6 +81,9 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
             "company_name",
             "job_title",
             "career_year",
+            "n_clap",
+            "n_bookmark",
+            "n_til",
         )
         model = WiltUser
 
