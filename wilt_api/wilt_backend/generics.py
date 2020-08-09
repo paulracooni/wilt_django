@@ -28,7 +28,11 @@ class MixInFollowList:
 
 class MixInTilQuery:
     def build_filter_initial(self):
-        filter_initial = dict(is_active=True, is_public=True)
+        filter_initial = dict(
+            is_active=True, 
+            is_public=True, 
+            user__is_active=True
+        )
         if self.request.query_params.get("with_my_private", False):
             user_id = getattr(self.request.user, "id", None)
             filter_initial.update(dict(user__id=user_id))
