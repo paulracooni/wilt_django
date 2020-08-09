@@ -309,8 +309,18 @@ class UserCategories(APIView):
                 .values_list("category", flat=True)
                 .distinct()
             )
-            categories = dict(categories=[category for category in query_set])
-            response = Response(categories, status=status.HTTP_200_OK)
+
+            query_set_v2 = (
+                Til.objects.filter(user=active_user, is_active=True)
+                .values("category")
+                .annotate(count=Count('category'))
+            )
+
+            data = dict(
+                categories=[category for category in query_set],
+                categories_count = [category for category in query_set_v2]
+            )
+            response = Response(data, status=status.HTTP_200_OK)
         else:
             response = get_invalid_user_response(id=id)
         return response
