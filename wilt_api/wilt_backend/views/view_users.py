@@ -73,11 +73,11 @@ class UserDetail(APIView):
             else:
                 user_info = request.data.dict()
 
-            if 'career_year' in user_info:
-                if not user_info['career_year']:
-                    user_info['career_year'] = None
+            if "career_year" in user_info:
+                if not user_info["career_year"]:
+                    user_info["career_year"] = None
 
-            modify_data = QueryDict('', mutable=True)
+            modify_data = QueryDict("", mutable=True)
             modify_data.update(user_info)
             response = self.update(user, modify_data, partial=True)
         else:
@@ -238,7 +238,9 @@ class UserTag(MixInTilQuery, APIView):
 
     def __count_tags_by(self, active_user):
         # Query data
-        queryset = Til.objects.filter(user=active_user).prefetch_related("tags")
+        queryset = Til.objects.filter(
+            user=active_user, is_active=True
+        ).prefetch_related("tags")
 
         # Count tags
         tags_count = dict()
@@ -303,7 +305,7 @@ class UserCategories(APIView):
         active_user = get_active_user_or_false(id=user_id)
         if active_user:
             query_set = (
-                Til.objects.filter(user=active_user)
+                Til.objects.filter(user=active_user, is_active=True)
                 .values_list("category", flat=True)
                 .distinct()
             )
@@ -324,13 +326,19 @@ class UserTotalCount(APIView):
 
         if active_user:
             # 유저의 til 갯수
-            user_til_count = Til.objects.filter(user=active_user).count()
+            user_til_count = Til.objects.filter(
+                user=active_user, is_active=True
+            ).count()
 
             # 유저의 응원 갯수
-            user_clap_count = Clap.objects.filter(til__user=active_user).count()
+            user_clap_count = Clap.objects.filter(
+                til__user=active_user, til__is_active=True
+            ).count()
 
             # 유저의 북마크 갯수
-            user_bookmark_count = Bookmark.objects.filter(user=active_user).count()
+            user_bookmark_count = Bookmark.objects.filter(
+                user=active_user, til__is_active=True
+            ).count()
 
             result["user_til_count"] = user_til_count
             result["user_clap_count"] = user_clap_count
