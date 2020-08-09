@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils import dateformat
 from django.utils.translation import gettext_lazy as _
-
+from datetime import datetime
 # Create your models here.
 
 nullable = dict(null=True, blank=True)
@@ -24,7 +24,8 @@ class Policy(models.Model):
         ordering = ["-date_created"]
 
     def __str__(self):
-        return dateformat.format(self.date_created, "%Y-%m-%d %H:%M:%S")
+        
+        return self.date_created
 
 
 class S3AuthInfo(models.Model):
@@ -43,4 +44,4 @@ class S3AuthInfo(models.Model):
         ordering = ["-date_created"]
 
     def __str__(self):
-        return dateformat.format(self.date_created, "%Y-%m-%d %H:%M:%S")
+        return self.date_created
