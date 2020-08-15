@@ -14,7 +14,7 @@ COPY . ./
 
 RUN pip install -r requirements.txt
 RUN pip install mysqlclient
-
+RUN export WILT_ENV=test
 WORKDIR /usr/wilt_django/wilt_api
 
 RUN python manage.py makemigrations

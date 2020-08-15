@@ -8,7 +8,7 @@ DATABASES = {
         "USER": USER,
         "PASSWORD": PASSWORD,
         "HOST": HOST,
-        "PORT": "3306",
+        "PORT": PORT,
         "CONN_MAX_AGE": 600,
         "OPTIONS": {
             "init_command": "SET default_storage_engine=INNODB, character_set_connection=utf8mb4, collation_connection=utf8mb4_unicode_ci",
