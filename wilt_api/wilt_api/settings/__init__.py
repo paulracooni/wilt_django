@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from password import ACCESSS_KEY_ID, SECRET_ACCESS_KEY, REGION, STORAGE_BUCKET_NAME
+from .s3_password import ACCESSS_KEY_ID, SECRET_ACCESS_KEY, REGION, STORAGE_BUCKET_NAME
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -113,7 +113,7 @@ STATIC_URL = "/static/"
 # REST settings
 
 ## Firebase authentication settings
-FIREBASE_PATH = os.path.join(BASE_DIR, "..", "firebase_key.json")
+FIREBASE_PATH = os.path.join(BASE_DIR, "../..", "firebase_key.json")
 AUTH_USER_MODEL = "wilt_backend.WiltUser"
 
 REST_FRAMEWORK = {

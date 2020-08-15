@@ -1,5 +1,5 @@
-from .password import NAME, USER, PASSWORD, HOST, PORT
-from .settings import *
+from .test_password import NAME, USER, PASSWORD, HOST, PORT
+from . import *
 
 DATABASES = {
     "default": {

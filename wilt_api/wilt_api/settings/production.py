@@ -1,5 +1,5 @@
 from .production_password import NAME, USER, PASSWORD, HOST
-from .settings import *
+from . import *
 
 DATABASES = {
     "default": {
