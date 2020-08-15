@@ -171,14 +171,13 @@ class UserClaps(APIView):
         active_user = get_active_user_or_false(id=user_id)
         if active_user:
             # Query data
-            queryset = Clap.objects.select_related("til").filter(user=active_user)
-            queryset = Til.objects.filter(id__in=[query.til.id for query in queryset])
-            queryset = queryset.filter(is_active=True, is_public=True)
+            queryset = Til.objects.filter(user=active_user, is_active=True, is_public=True)
+            queryset = Clap.objects.filter(til__in=[query.id for query in queryset])
 
             # Pagenation
             paginator = IdCursorPagination()
             queryset = paginator.paginate_queryset(queryset, request, view=self)
-            serializer = FeedSerializer(queryset, many=True)
+            serializer = ClapUserInfoSerializer(queryset, many=True)
 
             # Attach did somthing data
             response_data = attach_did_something(
