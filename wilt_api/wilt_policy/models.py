@@ -25,7 +25,7 @@ class Policy(models.Model):
 
     def __str__(self):
         
-        return self.date_created
+        return dateformat.format(self.date_created, "%Y-%m-%d %H:%M:%S")
 
 
 class S3AuthInfo(models.Model):
@@ -44,4 +44,4 @@ class S3AuthInfo(models.Model):
         ordering = ["-date_created"]
 
     def __str__(self):
-        return self.date_created
+        return  dateformat.format(self.date_created, "%Y-%m-%d %H:%M:%S")

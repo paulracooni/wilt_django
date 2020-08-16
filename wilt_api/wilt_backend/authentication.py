@@ -74,6 +74,20 @@ def get_or_create_user(user_data):
 
     return user
 
+def get_user_data_by_(uid):
+    user = auth.get_user(uid=uid)
+    fields = ('uid', 'display_name', 'email', 'photo_url')
+    user_data = {field: getattr(user, field) for field in fields}
+    user_data['id'] = user_data['uid']
+    user_data['photo'] = user_data['photo_url']
+
+    return user_data
+
+def give_superuser(user):
+    if not user.is_superuser or not user.is_staff:
+        user.is_superuser=True
+        user.is_staff =True
+        user.save() 
 
 class AuthenticationMixin:
     @staticmethod
@@ -92,13 +106,14 @@ class AuthenticationMixin:
 
         # For DEVELOPER
         if DEBUG and token == DEVELOP_CODE:
-            user = WiltUser.objects.get(id=ADMIN_USER_ID)
+            user_data = get_user_data_by_(uid=ADMIN_USER_ID)
+            user = get_or_create_user(user_data)
+            give_superuser(user)
             return user
 
         # For Wilt User and Anonymous User
         user_data = verify_user_token(token)
         user = get_or_anonymous(user_data)
-
         return user
 
 
