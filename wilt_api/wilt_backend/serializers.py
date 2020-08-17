@@ -119,11 +119,17 @@ class TilSerializer(serializers.ModelSerializer):
 
 
 class ClapSerializer(serializers.ModelSerializer):
+    til_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Clap
         fields = "__all__"
         read_only_fields = GLOBAL_ROF
 
+    def get_til_name(self, obj):
+        clap = Clap.objects.select_related('til').get(id=obj.id)
+
+        return clap.til.title
 
 class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:

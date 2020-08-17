@@ -162,7 +162,7 @@ class UserCheck(APIView):
         return is_not_used
 
 
-# User가 clap한 Til 목록을 불러오는 view
+# User의 TIL을 clap한 사람들에 대한 정보를 불러오는 view
 class UserClaps(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
