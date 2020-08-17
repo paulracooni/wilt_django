@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from wilt_policy.views import tos_view
 
 urlpatterns = [
     path("", include("wilt_backend.urls")),
     path("admin/", admin.site.urls),
+    path("tos/", tos_view, name="tos"),
 ]

@@ -171,7 +171,9 @@ class UserClaps(APIView):
         active_user = get_active_user_or_false(id=user_id)
         if active_user:
             # Query data
-            queryset = Til.objects.filter(user=active_user, is_active=True, is_public=True)
+            queryset = Til.objects.filter(
+                user=active_user, is_active=True, is_public=True
+            )
             queryset = Clap.objects.filter(til__in=[query.id for query in queryset])
 
             # Pagenation
@@ -312,12 +314,12 @@ class UserCategories(APIView):
             query_set_v2 = (
                 Til.objects.filter(user=active_user, is_active=True)
                 .values("category")
-                .annotate(count=Count('category'))
+                .annotate(count=Count("category"))
             )
 
             data = dict(
                 categories=[category for category in query_set],
-                categories_count = [category for category in query_set_v2]
+                categories_count=[category for category in query_set_v2],
             )
             response = Response(data, status=status.HTTP_200_OK)
         else:

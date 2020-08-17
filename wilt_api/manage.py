@@ -9,11 +9,11 @@ CASE_ = dict(
     production="wilt_api.settings.production",
 )
 
+
 def main():
     WILT_ENV = os.environ.get("WILT_ENV", "development")
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", CASE_[WILT_ENV])
-    
 
     # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wilt_api.settings")
 

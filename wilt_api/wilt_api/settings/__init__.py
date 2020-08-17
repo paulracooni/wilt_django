@@ -42,8 +42,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "wilt_backend",
     "wilt_policy",
+    # 3rd-party apps
+    "markdownify",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +65,7 @@ ROOT_URLCONF = "wilt_api.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -122,6 +125,10 @@ REST_FRAMEWORK = {
         "wilt_backend.authentication.FirebaseAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
 }
 
 
@@ -143,3 +150,20 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+## Markdownify settings
+MARKDOWNIFY_STRIP = False
+MARKDOWNIFY_WHITELIST_TAGS = {
+    "a",
+    "p",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "h7",
+    "ul",
+    "li",
+    "span",
+}

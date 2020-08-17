@@ -74,20 +74,23 @@ def get_or_create_user(user_data):
 
     return user
 
+
 def get_user_data_by_(uid):
     user = auth.get_user(uid=uid)
-    fields = ('uid', 'display_name', 'email', 'photo_url')
+    fields = ("uid", "display_name", "email", "photo_url")
     user_data = {field: getattr(user, field) for field in fields}
-    user_data['id'] = user_data['uid']
-    user_data['photo'] = user_data['photo_url']
+    user_data["id"] = user_data["uid"]
+    user_data["photo"] = user_data["photo_url"]
 
     return user_data
 
+
 def give_superuser(user):
     if not user.is_superuser or not user.is_staff:
-        user.is_superuser=True
-        user.is_staff =True
-        user.save() 
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+
 
 class AuthenticationMixin:
     @staticmethod
