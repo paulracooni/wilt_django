@@ -43,10 +43,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "fcm_manager",
     "wilt_backend",
     "wilt_policy",
-    # 3rd-party apps
-    "markdownify",
 ]
 
 MIDDLEWARE = [
