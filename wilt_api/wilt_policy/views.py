@@ -10,9 +10,6 @@ from wilt_policy.models import *
 from wilt_policy.serializers import *
 from wilt_backend.permissions import *
 
-import markdownify
-
-
 class PolicyRetrieve(APIView):
     def get(self, request, *args, **kwargs):
         policy = Policy.objects.latest("date_created")
