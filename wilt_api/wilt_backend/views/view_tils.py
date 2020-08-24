@@ -7,6 +7,7 @@ from rest_framework.settings import api_settings
 
 from wilt_backend import exceptions
 from wilt_backend import permissions
+from wilt_backend.models import CheerUpSentence
 from wilt_backend.utils import *
 from wilt_backend.models import *
 from wilt_backend.generics import *
@@ -42,6 +43,22 @@ def attach_did_something(data, user_id):
             )
         else:
             did_something = dict(did_clap=False, did_bookmark=False,)
+        data.update(did_something)
+        return data
+
+    if isinstance(data, dict):
+        data = attach(data, user_id)
+    else:
+        data = [attach(element, user_id) for element in data]
+    return data
+
+
+def attach_did_cheerupsentence(data, user_id):
+    def attach(data, user_id):
+        did_something = dict(
+            cheerup_sentence=CheerUpSentence.get_cheerup_sentence(user_id)
+        )
+
         data.update(did_something)
         return data
 
