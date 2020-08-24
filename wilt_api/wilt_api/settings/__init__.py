@@ -43,9 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "fcm_manager",
+    
     "wilt_backend",
     "wilt_policy",
+    "fcm_manager",
 ]
 
 MIDDLEWARE = [
