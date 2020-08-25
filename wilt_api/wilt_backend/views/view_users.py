@@ -10,13 +10,15 @@ from rest_framework.settings import api_settings
 
 from wilt_backend import exceptions
 from wilt_backend import permissions
+from wilt_backend.models import Plant, CheerUpSentence
+from wilt_backend.serializers import PlantSerializer
 
 from wilt_backend.utils import *
 from wilt_backend.models import *
 from wilt_backend.generics import *
 from wilt_backend.serializers import *
 from wilt_backend.views.helpers import *
-from wilt_backend.views.view_tils import attach_did_something
+from wilt_backend.views.view_tils import attach_did_something, attach_did_cheerupsentence
 from firebase_admin import auth
 
 from ast import literal_eval
@@ -298,6 +300,36 @@ class UserTils(MixInTilQuery, APIView):
 
         return response
 
+
+# user의 plant를 가지고 오는 view
+class UserPlant(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id, format=None):
+        active_user = get_active_user_or_false(id=user_id)
+
+        if active_user:
+            if Plant.update_plant_or_create(active_user):
+
+                queryset = Plant.objects.filter(user=active_user).order_by('-date_created')
+
+                # Pagenation
+                paginator = IdCursorPagination()
+                page = paginator.paginate_queryset(queryset, request, view=self)
+                queryset = page if page is not None else queryset
+                serializer = PlantSerializer(queryset, many=True)
+
+                # Attach did cheerupsentence data
+                response_data = attach_did_cheerupsentence(
+                    data=serializer.data, user_id=active_user
+                )
+
+                response = paginator.get_paginated_response(response_data)
+
+        else:
+            response = get_invalid_user_response(id=id)
+
+        return response
 
 class UserCategories(APIView):
     permission_classes = [permissions.IsAuthenticated]

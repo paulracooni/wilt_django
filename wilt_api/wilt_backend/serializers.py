@@ -2,6 +2,8 @@ from rest_framework import serializers
 from wilt_backend.models import *
 
 # All serializers defined as bellow
+from wilt_backend.models import Plant
+
 __all__ = (
     "WiltUserSerializer",
     "TagSerializer",
@@ -145,6 +147,19 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = "__all__"
         read_only_fields = GLOBAL_ROF
+
+class PlantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plant
+        fields = (
+            "id",
+            "plant_id",
+            "plant_name",
+            "til_count",
+            "satellite",
+            "date_created",
+            "completed_date",
+        )
 
 
 class FeedSerializer(TilSerializer):
