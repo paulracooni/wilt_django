@@ -75,6 +75,7 @@ class MiniWiltUserSerilizer(WiltUserSerializer):
     class Meta:
         fields = (
             "id",
+            "email",
             "display_name",
             "picture",
             "description",

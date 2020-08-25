@@ -20,6 +20,13 @@ UserModel = get_user_model()
 credentials = firebase_admin.credentials.Certificate(settings.FIREBASE_PATH)
 firebase_app = firebase_admin.initialize_app(credentials)
 
+def logging(line):
+    from datetime import datetime
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("./logging.txt", 'a') as f:
+        log_line = f"[{now}] {line}"
+        print(log_line, file=f)
 
 def verify_user_token(token):
 
@@ -102,9 +109,12 @@ class AuthenticationMixin:
         # Get Token
         token = self.get_auth_token(request)
 
+
         # For Staff User on Admin page
         user = get_user(request)
         if user and user.is_staff:
+            logging("In Admin page")
+            logging(f"{user} | [{request.method}]{request.path}")
             return user
 
         # For DEVELOPER
@@ -112,11 +122,15 @@ class AuthenticationMixin:
             user_data = get_user_data_by_(uid=ADMIN_USER_ID)
             user = get_or_create_user(user_data)
             give_superuser(user)
+            logging("In DEVELOPER")
+            logging(f"{user} | [{request.method}]{request.path}")
             return user
 
         # For Wilt User and Anonymous User
         user_data = verify_user_token(token)
         user = get_or_anonymous(user_data)
+        logging(f"{user} | {request.method} | {request.path}")
+        
         return user
 
 

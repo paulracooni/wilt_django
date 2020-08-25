@@ -7,3 +7,4 @@ firebase-admin==4.3.0
 mysqlclient
 django-storages==1.9.1
 boto3
+markdownify

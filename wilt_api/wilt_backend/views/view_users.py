@@ -55,6 +55,7 @@ class UserDetail(APIView):
         else:
             detail = "Deleted user. (is_active=False)"
             response = Response(dict(detail=detail), status=status.HTTP_204_NO_CONTENT)
+            
         return response
 
     def put(self, request, user_id, format=None):

@@ -7,7 +7,7 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
-RUN export WILT_ENV=test
+RUN export WILT_ENV=production
 
 WORKDIR /usr/wilt_django
 COPY . ./
