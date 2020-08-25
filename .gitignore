@@ -9,3 +9,4 @@ firebase_key.json
 *password*
 Dockerfile-dev
 docker-compose.yml
+logging*
