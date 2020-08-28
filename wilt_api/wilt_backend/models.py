@@ -211,7 +211,7 @@ class Plant(models.Model):
     plant_name = models.CharField(_("plant_name"), max_length=10, null=False)
     til_count = models.SmallIntegerField(_("til_count"), null=False)
     til = models.ManyToManyField(Til, related_name="plant_tils")
-    satellite = models.CharField(_("satellite"), max_length=255, default=None, null=True, blank=True)
+    satellite = models.TextField(_("satellite"), default=None, null=True, blank=True)
     date_created = models.DateTimeField(_("date created"), **domain_created)
     completed_date = models.DateField(_("completed_date"), default=None, null=True, blank=True)
 
@@ -289,11 +289,9 @@ class Plant(models.Model):
                     # 최신순으로 태그 정렬
                     for tag in til.tags.all():
                         tag_exists = False
-                        print('tag' , tag.name)
                         for i, satellite in enumerate(satellite_list):
 
                             satellite_tag = list(satellite.keys())[0]
-                            print(i, satellite_tag)
 
                             if tag.name == satellite_tag:
                                 tag_exists = True
@@ -305,7 +303,6 @@ class Plant(models.Model):
                                 for j, satellite in enumerate(satellite_list):
 
                                     satellite_tag = list(satellite.keys())[0]
-                                    print(123, j, satellite_tag)
                                     if satellite_list[j][satellite_tag] <= tag_count:
                                         satellite_list.insert(j, temp_satellite)
                                         break
@@ -316,7 +313,13 @@ class Plant(models.Model):
                             # 해당 태그가 존재하지 않으면 생성하기
                             temp_satellite = dict()
                             temp_satellite[tag.name] = 1
-                            satellite_list.append(temp_satellite)
+
+                            for j, satellite in enumerate(satellite_list):
+
+                                satellite_tag = list(satellite.keys())[0]
+                                if satellite_list[j][satellite_tag] <= 1:
+                                    satellite_list.insert(j, temp_satellite)
+                                    break
 
 
                 plant.satellite = str(satellite_list)
