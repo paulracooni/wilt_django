@@ -307,23 +307,19 @@ class UserPlant(APIView):
 
     def get(self, request, user_id, format=None):
         active_user = get_active_user_or_false(id=user_id)
-
         if active_user:
             if Plant.update_plant_or_create(active_user):
 
                 queryset = Plant.objects.filter(user=active_user).order_by('-date_created')
-
                 # Pagenation
                 paginator = IdCursorPagination()
                 page = paginator.paginate_queryset(queryset, request, view=self)
                 queryset = page if page is not None else queryset
                 serializer = PlantSerializer(queryset, many=True)
-
                 # Attach did cheerupsentence data
                 response_data = attach_did_cheerupsentence(
                     data=serializer.data, user_id=active_user
                 )
-
                 response = paginator.get_paginated_response(response_data)
 
         else:
