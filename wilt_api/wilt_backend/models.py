@@ -225,17 +225,20 @@ class Plant(models.Model):
     #plant를 생성하는 function
     @classmethod
     def update_plant_or_create(cls, user):
-        plant_list = Plant.objects.filter(user=user)
+        plant_list = Plant.objects.filter(user=user, finish=False)
 
         try:
             if plant_list.exists():
                 # 30개가 완성된 것은 더 이상 건드리지 않고, 나머지 생성 중인 것만 가지고 와서 fix해준다.
+
                 last_plant = plant_list.last()
                 # 마지막이 몇 번째 plant인지 파악
                 plant_id = last_plant.plant_id
-
+                # 여긴 이론상으론 타면 안된다.
                 if last_plant.til_count == 30:
                     plant_id = plant_id+1
+                    last_plant.finish = True
+                    last_plant.save()
 
                 Plant.create_plant(user, plant_id)
             else:
@@ -251,6 +254,7 @@ class Plant(models.Model):
     @classmethod
     def create_plant(cls, user, plant_id):
         print('create_plant', user, plant_id)
+
         cycle_count = 30
         user_til_list = Til.objects.filter(user=user, is_active=True).order_by('date_created').prefetch_related("tags")
         total_count = int(len(user_til_list)/30) # 70개면 2개 행성 완성 가능
@@ -259,10 +263,10 @@ class Plant(models.Model):
         # check_count의 시작은 마지막 행성의 count부터 시작해야 한다.
         if user_til_list:
             for i in range(plant_id, total_count+2):
-                # plant_id = 0부터 시작한다.
+                # plant_id = 1부터 시작한다.
                 user_last_plant = Plant.objects.filter(user=user, finish=False).last()
 
-                # 이렇게 조건을 거니깐 하나가 더 생겨버리네??
+                # 모든 것이 Finish되고, 30개 단위가 되어서 더 이상 생성할 필요 없을 때
                 if not user_last_plant and len(user_til_list)%30 == 0:
                     continue
 
@@ -287,26 +291,30 @@ class Plant(models.Model):
                 else:
                     plant = user_last_plant
 
-                satellite_list = json.loads(user_last_plant.satellite.replace("'","\"")) if user_last_plant else list()
-                til_count = plant.til_count
+                # 이건 계속 만들 것이다.
+                # satellite_list = json.loads(user_last_plant.satellite.replace("'","\"")) if user_last_plant else list()
+                satellite_list = list()
+                # 이것도 다시 해당 갯수부터 파악하면 된다. 항상 0부터시작
+                til_count = 0
+
                 # 마지막 til이 작성된 시간이 complete_time이다.
+
                 last_til = None
 
                 print(cycle_count*(i-1)+til_count , ':', cycle_count*(i))
 
-                # 47 ~ 60 => 이게 60까지 안될 수도 있다.
-                # 15 ~ 30 => 이게 30까지 안될 수도 있다.
-                # 15 ~ 25까지만 돌 수도 있다.
-                for til in user_til_list[cycle_count*(i-1)+til_count:cycle_count*(i)]:
+                for til in user_til_list[cycle_count*(i-1):cycle_count*(i)]:
                     til_count += 1
 
-                    # many to many til 엮기 (중복으로 엮일 수 있는지도 파악해봐야한다.) => 먼저 plant id가 나와야 한다.
-                    plant.til.add(til)
+                    if til not in plant.til.all():
+                        plant.til.add(til)
+
                     last_til = til
 
                     # 최신순으로 태그 정렬
                     for tag in til.tags.all():
                         tag_exists = False
+
                         for i, satellite in enumerate(satellite_list):
 
                             satellite_tag = list(satellite.keys())[0]
@@ -318,7 +326,6 @@ class Plant(models.Model):
                                 temp_satellite = satellite_list.pop(i)
                                 # 정렬 하기
                                 for j, satellite in enumerate(satellite_list):
-
                                     satellite_tag = list(satellite.keys())[0]
                                     if satellite_list[j][satellite_tag] <= tag_count:
                                         satellite_list.insert(j, temp_satellite)
@@ -331,18 +338,18 @@ class Plant(models.Model):
                             temp_satellite[tag.name] = 1
 
                             if len(satellite_list):
-                                    # 해당 태그가 존재하지 않으면 생성하기
-                                    for j, satellite in enumerate(satellite_list):
-                                        insert = False
-                                        satellite_tag = list(satellite.keys())[0]
-                                        if satellite_list[j][satellite_tag] <= 1:
-                                            satellite_list.insert(j, temp_satellite)
-                                            insert = True
-                                            break
+                                # 해당 태그가 존재하지 않으면 생성하기
+                                for j, satellite in enumerate(satellite_list):
+                                    insert = False
+                                    satellite_tag = list(satellite.keys())[0]
+                                    if satellite_list[j][satellite_tag] <= 1:
+                                        satellite_list.insert(j, temp_satellite)
+                                        insert = True
+                                        break
 
-                                    # 끼워넣지 못하면 제일 뒤에 넣는다.
-                                    if not insert:
-                                        satellite_list.append(temp_satellite)
+                                # 끼워넣지 못하면 제일 뒤에 넣는다.
+                                if not insert:
+                                    satellite_list.append(temp_satellite)
 
                             else:
                                 satellite_list.append(temp_satellite)

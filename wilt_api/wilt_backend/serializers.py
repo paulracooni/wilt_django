@@ -159,6 +159,7 @@ class PlantSerializer(serializers.ModelSerializer):
             "satellite",
             "date_created",
             "completed_date",
+            "finish",
         )
 
 
