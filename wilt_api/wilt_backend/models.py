@@ -225,15 +225,16 @@ class Plant(models.Model):
     #plant를 생성하는 function
     @classmethod
     def update_plant_or_create(cls, user):
-        plant_list = Plant.objects.filter(user=user, finish=False)
+        plant_list = Plant.objects.filter(user=user)
 
         try:
             if plant_list.exists():
-                # 30개가 완성된 것은 더 이상 건드리지 않고, 나머지 생성 중인 것만 가지고 와서 fix해준다.
 
                 last_plant = plant_list.last()
+
                 # 마지막이 몇 번째 plant인지 파악
                 plant_id = last_plant.plant_id
+
                 # 여긴 이론상으론 타면 안된다.
                 if last_plant.til_count == 30:
                     plant_id = plant_id+1

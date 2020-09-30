@@ -301,8 +301,8 @@ class UserTils(MixInTilQuery, APIView):
         return response
 
 
-# user의 plant를 가지고 오는 view
-class UserPlant(APIView):
+# user의 진행 중인plant를 가지고 오는 view
+class UserGoingPlant(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, user_id, format=None):
@@ -310,7 +310,7 @@ class UserPlant(APIView):
         if active_user:
             if Plant.update_plant_or_create(active_user):
 
-                queryset = Plant.objects.filter(user=active_user).order_by('-date_created')
+                queryset = Plant.objects.filter(user=active_user, finish=False).order_by('-date_created')
                 # Pagenation
                 paginator = IdCursorPagination()
                 page = paginator.paginate_queryset(queryset, request, view=self)
@@ -326,6 +326,33 @@ class UserPlant(APIView):
             response = get_invalid_user_response(id=id)
 
         return response
+
+# user의 완료된 plant를 가지고 오는 view
+class UserFinishPlant(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id, format=None):
+        active_user = get_active_user_or_false(id=user_id)
+        if active_user:
+            if Plant.update_plant_or_create(active_user):
+
+                queryset = Plant.objects.filter(user=active_user, finish=True).order_by('-date_created')
+                # Pagenation
+                paginator = IdCursorPagination()
+                page = paginator.paginate_queryset(queryset, request, view=self)
+                queryset = page if page is not None else queryset
+                serializer = PlantSerializer(queryset, many=True)
+                # Attach did cheerupsentence data
+                response_data = attach_did_cheerupsentence(
+                    data=serializer.data, user_id=active_user
+                )
+                response = paginator.get_paginated_response(response_data)
+
+        else:
+            response = get_invalid_user_response(id=id)
+
+        return response
+
 
 class UserCategories(APIView):
     permission_classes = [permissions.IsAuthenticated]
