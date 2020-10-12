@@ -23,7 +23,12 @@ from firebase_admin import auth
 
 from ast import literal_eval
 
-
+# Debug ///////////////////////////////////////
+# from rest_framework.exceptions import ErrorDetail, ValidationError
+# def log_error(line):
+#     with open('temp_log.txt', 'a') as f:
+#         print(line, file=f)
+# /////////////////////////////////////////////
 def get_user_or_false(id):
     try:
         user = WiltUser.objects.get(id=id)
@@ -47,7 +52,10 @@ def get_invalid_user_response(id):
 class UserDetail(APIView):
 
     permission_classes = [permissions.IsMyself]
-    NO_UPDATE_FIELD = ("id", "email", "is_staff", "is_superuser")
+    NO_UPDATE_FIELD = (
+        "id", "email", "is_staff", "is_superuser", 
+        "n_following", "n_followers", "n_bookmark", "n_clap", "n_til"
+    )
 
     def get(self, request, user_id, format=None):
         active_user = get_active_user_or_false(id=user_id)
@@ -105,7 +113,7 @@ class UserDetail(APIView):
     @staticmethod
     def __update(user, data, partial=False):
         serializer = WiltUserSerializer(user, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True) # Here is the bug
         serializer.save()
         return serializer
 
@@ -116,6 +124,10 @@ class UserDetail(APIView):
             for field_name, field_value in fields.items()
             if field_name not in cls.NO_UPDATE_FIELD
         }
+
+        if 'picture' in fields.keys() and not fields['picture'] :
+            del fields['picture']
+        
         return fields
 
 
