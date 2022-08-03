@@ -2,7 +2,7 @@ Django==3.0.7
 djangorestframework==3.11.0
 django-firebase-authentication==1.0.8
 django-tagging==0.5.0
-django-filter==2.3.0
+django-filter==2.4.0
 firebase-admin==4.3.0
 mysqlclient
 django-storages==1.9.1
